@@ -20,6 +20,7 @@ The repository currently contains an initial Git commit, ignore rules, local ski
 - Built app: Bun serves `dist/` and the API on `127.0.0.1:3001`. Validate Host and browser-origin context before dispatching API requests. Use explicit allowed origins for each mode; never reflect arbitrary origins.
 - Production application code accepts only the configured hosted HTTPS database URL and a schema file resolved at startup. Reject URL credentials, query strings, and fragments. Do not follow upstream redirects carrying credentials. Tests inject an upstream fetch implementation; they do not add a production switch that bypasses these rules.
 - `.env` contains `DEXIE_DATABASE_URL`, `DEXIE_CLIENT_ID`, `DEXIE_CLIENT_SECRET`, and `DEXIE_SCHEMA_PATH`. Read only these server-side. Record/schema exports go under a documented gitignored `local/` directory; ignore `*.key` and local environment variants too.
+- Vite must retain its default sensitive-file deny patterns and additionally deny `local/`, schema exports, and Dexie CLI configuration files on static/module routes. Disable its unfiltered public directory; application assets come through explicit source imports. A real local HTTP regression test covers this boundary.
 - The backend can start in a configuration-error state so the browser can explain setup problems. A missing or invalid configuration must never trigger upstream requests.
 
 ### Local API contract

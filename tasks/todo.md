@@ -89,7 +89,8 @@ Execute sequentially through the approved checkpoints. Each behavior change star
 
 ## 06 — Show connection setup status
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** All three setup increments and the static-file safeguard below are complete. Full suite: 97 passing tests across six files; strict checks, lint, formatting, and build pass. Browser evidence covers missing/invalid/configured/unavailable setup through the actual local handlers; no cloud requests or real credentials were used. Validation mutations in URL and browser-response guards were detected by their tests and restored.
 - **Description:** Wire sanitized setup/status/table-metadata routes into the browser and document local configuration names.
 - **Acceptance:** Missing or invalid configuration yields actionable UI states without upstream calls; valid setup displays the configured database without claiming it has connected; environment files, local exports, and key files are ignored.
 - **Verify:** `bun test ./tests/http.test.ts`; `bun run check`; `bun run build`; inspect valid/missing setup using separate loopback Vite/API processes until the supervisor lands in task 16.
@@ -102,13 +103,15 @@ This task is split into the following increments to retain the five-file scope l
 - [x] Setup API: `server/http.ts`, `server/index.ts`, `shared/contracts.ts`, `tests/http.test.ts`, `tests/request-guard.test.ts`. Verify status/metadata, safe errors, startup loading, and absence of upstream calls. Evidence: 76 tests pass; status/metadata payloads exclude credentials, setup endpoints make zero cloud calls, and the Bun entry point loads configuration at startup. Strict checks, lint, and build pass.
 - [x] Local configuration template: `.env.example`, `.gitignore`. Evidence: `git check-ignore` confirms local environments, schema exports, keys, and browser artifacts are ignored while `.env.example` remains trackable. The template contains no credentials and explains the current separate-terminal startup commands.
 - [x] Browser setup status: `src/lib/api.ts`, `src/App.svelte`, `tests/api.test.ts`. Evidence: 89 tests pass; malformed replies and raw exception/error bodies are rejected. Isolated Chromium verified missing/invalid/configured/unavailable states against real local handlers, retry/keyboard access, no external browser requests, credential redaction, and no overflow at 320/768/1024/1440 pixels. Desktop/mobile screenshots were reviewed; configured status explicitly says cloud access is unverified.
-- [ ] Development file access: `vite.config.ts`, `tests/dev-server.test.ts`. Verify local schema/configuration files cannot bypass API redaction through Vite's static routes. Preserve Vite's default deny patterns and protect the documented local configuration directory.
+- [x] Development file access: `vite.config.ts`, `tests/dev-server.test.ts`. A failing real HTTP test reproduced direct exposure of synthetic schema/configuration JSON. Eight regression checks now pass, covering static/raw/filesystem routes, public-directory bypass protection, preserved environment/key protections, and continued public-asset serving. Vite's default deny patterns are retained.
 
 ### Checkpoint B — Safe setup
 
-- [ ] Setup/schema and request-boundary tests pass, including bad-input and foreign-origin cases.
-- [ ] Missing, invalid, and valid local setup states are visible; invalid setup triggers no upstream request.
+- [x] Setup/schema and request-boundary tests pass, including bad-input and foreign-origin cases.
+- [x] Missing, invalid, and valid local setup states are visible; invalid setup triggers no upstream request.
 - [ ] Human reviews the checkpoint before proceeding.
+
+**Review state:** Tasks 04–06 are complete; task 07 has not started. Checkpoint B awaits human review. Both the normal Bun API and Vite preview are running locally. Synthetic browser captures: `/tmp/dexie-setup-missing.png`, `/tmp/dexie-setup-invalid.png`, `/tmp/dexie-setup-configured.png`, `/tmp/dexie-setup-unavailable.png`, and `/tmp/dexie-setup-mobile.png`. The disposable browser verification script is `/tmp/dexie-setup-smoke.ts`; permanent browser-suite setup remains task 10. No real cloud authentication or record fetch has been attempted.
 
 ## 07 — Obtain read-only cloud tokens
 
