@@ -97,6 +97,12 @@ Execute sequentially through the approved checkpoints. Each behavior change star
 - **Files:** `server/http.ts`, `src/App.svelte`, `.env.example`, `.gitignore`, `tests/http.test.ts`.
 - **Scope:** Medium.
 
+This task is split into the following increments to retain the five-file scope limit:
+
+- [x] Setup API: `server/http.ts`, `server/index.ts`, `shared/contracts.ts`, `tests/http.test.ts`, `tests/request-guard.test.ts`. Verify status/metadata, safe errors, startup loading, and absence of upstream calls. Evidence: 76 tests pass; status/metadata payloads exclude credentials, setup endpoints make zero cloud calls, and the Bun entry point loads configuration at startup. Strict checks, lint, and build pass.
+- [ ] Local configuration template: `.env.example`, `.gitignore`. Verify that local environments, schema exports, and keys are ignored while the template remains trackable.
+- [ ] Browser setup status: `src/lib/api.ts`, `src/App.svelte`, `tests/api.test.ts`. Verify response validation and render missing/invalid/configured/unavailable states through the real local API.
+
 ### Checkpoint B — Safe setup
 
 - [ ] Setup/schema and request-boundary tests pass, including bad-input and foreign-origin cases.

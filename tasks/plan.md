@@ -26,13 +26,15 @@ The repository currently contains an initial Git commit, ignore rules, local ski
 
 All responses are JSON with `Cache-Control: no-store`. Only GET reads are exposed. Reject mutation methods with 405 and unsupported routes with 404; do not forward arbitrary browser paths or query strings upstream.
 
-| Local route                            | Successful result                              | Purpose                                                                                           |
-| -------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `GET /api/status`                      | `{ state: 'configured', databaseUrl }`         | Reports sanitized local setup; explicitly does not claim a successful cloud connection            |
-| `GET /api/tables`                      | `{ tables: [{ name, primaryKey, keyPaths }] }` | Returns validated, alphabetically ordered schema metadata                                         |
-| `GET /api/tables/:encodedName/records` | `{ records, fetchedAt }`                       | Returns one complete bounded table result; actual authentication/permission failures surface here |
+| Local route                            | Successful result                                                            | Purpose                                                                                           |
+| -------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `GET /api/status`                      | `{ state: 'configured', databaseUrl }` or `{ state: 'unconfigured', error }` | Reports sanitized local setup; explicitly does not claim a successful cloud connection            |
+| `GET /api/tables`                      | `{ tables: [{ name, primaryKey, keyPaths }] }`                               | Returns validated, alphabetically ordered schema metadata                                         |
+| `GET /api/tables/:encodedName/records` | `{ records, fetchedAt }`                                                     | Returns one complete bounded table result; actual authentication/permission failures surface here |
 
 Errors use `{ error: { code, message, retryable } }`, with stable codes for configuration, authentication, permission, timeout, network, invalid upstream data, and size limits. Messages come from local templates, not raw upstream bodies. The browser validates responses from `unknown` before using them. It computes record count from the complete returned array.
+
+Implementation clarification at task 06: `/api/status` returns HTTP 200 for either configured or unconfigured local setup, since both are normal status results. An attempted table-list read while unconfigured returns HTTP 503 with the structured configuration error. This keeps normal setup reporting distinct from a failed data request.
 
 `shared/contracts.ts` owns the record JSON value type, table metadata, limits, and API response/error contracts. Cloud JSON envelopes stay intact, including typed values and blob references. No date revival, blob download, or JSON transformation is needed to inspect raw returned values.
 

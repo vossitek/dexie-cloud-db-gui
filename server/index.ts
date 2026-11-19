@@ -1,11 +1,14 @@
 import { createHandler, jsonResponse } from './http';
+import { loadConfiguration } from './config';
+
+const setup = await loadConfiguration(process.env);
 
 // https://bun.sh/docs/runtime/http/server
 const server = Bun.serve({
   hostname: '127.0.0.1',
   port: 3001,
   development: false,
-  fetch: createHandler({ mode: 'development' }),
+  fetch: createHandler({ mode: 'development', setup }),
   error: () =>
     jsonResponse(
       {

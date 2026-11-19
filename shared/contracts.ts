@@ -31,10 +31,9 @@ export interface ApiError {
   error: { code: ErrorCode; message: string; retryable: boolean };
 }
 
-export interface StatusResponse {
-  state: 'configured';
-  databaseUrl: string;
-}
+export type StatusResponse =
+  | { state: 'configured'; databaseUrl: string }
+  | { state: 'unconfigured'; error: ApiError['error'] };
 
 export interface TablesResponse {
   tables: TableMetadata[];

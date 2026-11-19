@@ -1,5 +1,15 @@
 import { describe, expect, test } from 'bun:test';
 import { createHandler } from '../server/http';
+import type { SetupState } from '../server/config';
+
+const setup: SetupState = {
+  state: 'unconfigured',
+  error: {
+    code: 'CONFIGURATION_ERROR',
+    message: 'Not configured.',
+    retryable: false,
+  },
+};
 
 function request(
   headers: Record<string, string> = {},
@@ -13,8 +23,8 @@ function request(
 }
 
 describe('local request boundary', () => {
-  const production = createHandler({ mode: 'production' });
-  const development = createHandler({ mode: 'development' });
+  const production = createHandler({ mode: 'production', setup });
+  const development = createHandler({ mode: 'development', setup });
 
   test.each([
     { Host: 'evil.example' },
