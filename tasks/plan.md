@@ -50,7 +50,7 @@ The record inspector reads the selected in-memory record. It needs no extra endp
 5. Apply a 30-second request deadline through body consumption; cancel reading on a byte-limit violation or disconnected client. A token-expiry read may renew and retry once, with no retry loop for permissions or unrelated failures.
 6. Return a fresh result without a server record cache. A failed refresh must not make stale records look current.
 
-The underlying protocol remains the official [Dexie REST API](https://dexie.org/docs/cloud/rest-api). Schema setup uses the [CLI schema export](https://dexie.org/docs/cloud/cli#export). Confirm actual payload shape and token-expiration units with official docs and the eventual test-database smoke test; do not guess around an incompatible response.
+The underlying protocol remains the official [Dexie REST API](https://dexie.org/docs/cloud/rest-api). Schema setup uses the [CLI schema export](https://dexie.org/docs/cloud/cli#export). Task 07 verified the documented token fields and millisecond expiry interpretation against the [official authentication client](https://github.com/dexie/Dexie.js/blob/master/addons/dexie-cloud/src/authentication/authenticate.ts). Token acquisition has a separate 64 KiB response budget and the same 30-second deadline through body consumption. Confirm the actual payload with the eventual task 18 test-database smoke test; do not guess around an incompatible response.
 
 ### Browser behavior
 

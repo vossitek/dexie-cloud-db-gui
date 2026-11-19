@@ -109,13 +109,14 @@ This task is split into the following increments to retain the five-file scope l
 
 - [x] Setup/schema and request-boundary tests pass, including bad-input and foreign-origin cases.
 - [x] Missing, invalid, and valid local setup states are visible; invalid setup triggers no upstream request.
-- [ ] Human reviews the checkpoint before proceeding.
+- [x] Human reviews the checkpoint before proceeding — approved by the user on 2026-11-19.
 
-**Review state:** Tasks 04–06 are complete; task 07 has not started. Checkpoint B awaits human review. Both the normal Bun API and Vite preview are running locally. Synthetic browser captures: `/tmp/dexie-setup-missing.png`, `/tmp/dexie-setup-invalid.png`, `/tmp/dexie-setup-configured.png`, `/tmp/dexie-setup-unavailable.png`, and `/tmp/dexie-setup-mobile.png`. The disposable browser verification script is `/tmp/dexie-setup-smoke.ts`; permanent browser-suite setup remains task 10. No real cloud authentication or record fetch has been attempted.
+**Review state:** Tasks 04–06 and checkpoint B are approved; task 07 is complete. Tasks 08–09 remain before checkpoint C. Synthetic browser captures: `/tmp/dexie-setup-missing.png`, `/tmp/dexie-setup-invalid.png`, `/tmp/dexie-setup-configured.png`, `/tmp/dexie-setup-unavailable.png`, and `/tmp/dexie-setup-mobile.png`. The disposable browser verification script is `/tmp/dexie-setup-smoke.ts`; permanent browser-suite setup remains task 10. No real cloud authentication or record fetch has been attempted.
 
 ## 07 — Obtain read-only cloud tokens
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** 33 focused authentication tests pass; the full suite passes 130 tests across seven files with loopback socket access for the Vite regression tests. Strict checks, lint, formatting, and build pass. Tests cover exact read-only scopes, millisecond expiry, concurrent renewals, database isolation, stale-token invalidation, malformed/non-JSON replies, rejected credentials/permissions, redirects, sanitized transport failures, 64 KiB boundary/cancellation, and fetch/body deadlines. An inverted cache-expiry comparison was caught by the focused test and restored. Fresh-context adversarial review found no contract violations. Only injected upstream fixtures were used; production integration is task 09 and the real-cloud smoke test remains task 18.
 - **Description:** Implement bounded, validated token acquisition and in-memory renewal through an injected fetch boundary.
 - **Acceptance:** Request only `ACCESS_DB`/`GLOBAL_READ`; validate token/expiry and coalesce renewal; sanitize authentication errors and refuse credential-bearing redirects.
 - **Verify:** `bun test ./tests/auth.test.ts`; cover malformed responses, expiry units from the documented protocol, concurrent requests, redirects, and absence of secrets in returned errors; `bun run check`.
