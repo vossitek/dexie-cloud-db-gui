@@ -19,7 +19,8 @@ Execute sequentially through the approved checkpoints. Each behavior change star
 
 ## 02 — Display the browser shell
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** Vite production build and strict Svelte/tools checks pass. Isolated Chromium rendered the shell without console errors/warnings; widths 320/768/1024/1440 had no page overflow, and Tab focused the skip link. Desktop/mobile screenshots were visually reviewed. The default headless-shell capture timed out; the full Chromium channel completed screenshots under Bun and will be used for browser checks.
 - **Description:** Add the smallest Svelte/Vite entry point and a usable application shell with placeholders for navigation and records.
 - **Acceptance:** Vite binds to loopback with a strict port; the UI builds under Bun; the page has a semantic landmark layout and shared visual tokens.
 - **Verify:** `bun run --bun vite build`; run `bun run --bun vite --host 127.0.0.1 --port 5173 --strictPort` and inspect the shell in a browser.
