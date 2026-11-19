@@ -8,7 +8,8 @@ Execute sequentially through the approved checkpoints. Each behavior change star
 
 ## 01 — Establish the pinned toolchain
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** Installed the exact approved pins on Bun 1.4.5; frozen install passed without changes. Vite 8.3.8, TypeScript 6.0.3, svelte-check 4.7.8, ESLint 10.15.0, Prettier 3.10.1, and Playwright 1.65.1 entry points ran explicitly under Bun. Runtime behavior/build validation follows in tasks 02–03.
 - **Description:** Create the minimal package and strict TypeScript/Svelte configuration using the plan's exact dependencies and Bun runtime.
 - **Acceptance:** Exact direct pins and `packageManager` are recorded; a frozen install reproduces the lockfile; tool entry points can run explicitly under Bun.
 - **Verify:** `bun install`, then `bun install --frozen-lockfile`; `bun run --bun vite --version`; `bun run --bun tsc --version`; `bun run --bun svelte-check --version`. No application behavior test is needed yet.
