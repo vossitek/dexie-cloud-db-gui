@@ -26,11 +26,11 @@ The repository currently contains an initial Git commit, ignore rules, local ski
 
 All responses are JSON with `Cache-Control: no-store`. Only GET reads are exposed. Reject mutation methods with 405 and unsupported routes with 404; do not forward arbitrary browser paths or query strings upstream.
 
-| Local route | Successful result | Purpose |
-| --- | --- | --- |
-| `GET /api/status` | `{ state: 'configured', databaseUrl }` | Reports sanitized local setup; explicitly does not claim a successful cloud connection |
-| `GET /api/tables` | `{ tables: [{ name, primaryKey, keyPaths }] }` | Returns validated, alphabetically ordered schema metadata |
-| `GET /api/tables/:encodedName/records` | `{ records, fetchedAt }` | Returns one complete bounded table result; actual authentication/permission failures surface here |
+| Local route                            | Successful result                              | Purpose                                                                                           |
+| -------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `GET /api/status`                      | `{ state: 'configured', databaseUrl }`         | Reports sanitized local setup; explicitly does not claim a successful cloud connection            |
+| `GET /api/tables`                      | `{ tables: [{ name, primaryKey, keyPaths }] }` | Returns validated, alphabetically ordered schema metadata                                         |
+| `GET /api/tables/:encodedName/records` | `{ records, fetchedAt }`                       | Returns one complete bounded table result; actual authentication/permission failures surface here |
 
 Errors use `{ error: { code, message, retryable } }`, with stable codes for configuration, authentication, permission, timeout, network, invalid upstream data, and size limits. Messages come from local templates, not raw upstream bodies. The browser validates responses from `unknown` before using them. It computes record count from the complete returned array.
 
@@ -62,22 +62,22 @@ The underlying protocol remains the official [Dexie REST API](https://dexie.org/
 
 Metadata was queried from the npm registry using `bun info <package> version peerDependencies --json` on 2026-11-19. These are proposed exact direct-dependency pins, not a claim that installation or runtime validation has already passed.
 
-| Package/runtime | Exact version |
-| --- | --- |
-| Bun | 1.4.5 |
-| svelte | 5.58.0 |
-| vite | 8.3.8 |
-| @sveltejs/vite-plugin-svelte | 7.3.1 |
-| typescript | 6.0.3 |
-| @types/bun | 1.4.4 |
-| svelte-check | 4.7.8 |
-| @playwright/test | 1.65.1 |
-| eslint | 10.15.0 |
-| @eslint/js | 10.0.1 |
-| typescript-eslint | 8.73.0 |
-| eslint-plugin-svelte | 3.24.1 |
-| prettier | 3.10.1 |
-| prettier-plugin-svelte | 4.2.0 |
+| Package/runtime              | Exact version |
+| ---------------------------- | ------------- |
+| Bun                          | 1.4.5         |
+| svelte                       | 5.58.0        |
+| vite                         | 8.3.8         |
+| @sveltejs/vite-plugin-svelte | 7.3.1         |
+| typescript                   | 6.0.3         |
+| @types/bun                   | 1.4.4         |
+| svelte-check                 | 4.7.8         |
+| @playwright/test             | 1.65.1        |
+| eslint                       | 10.15.0       |
+| @eslint/js                   | 10.0.1        |
+| typescript-eslint            | 8.73.0        |
+| eslint-plugin-svelte         | 3.24.1        |
+| prettier                     | 3.10.1        |
+| prettier-plugin-svelte       | 4.2.0         |
 
 TypeScript 6.0.3 satisfies both svelte-check's `^5 || ^6` peer range and typescript-eslint's `<6.1` range. The registry's latest TypeScript 7 is outside these ranges. The Svelte Vite plugin accepts Vite 8 and Svelte `^5.46.4`. Registry metadata: [svelte-check](https://registry.npmjs.org/svelte-check/latest), [typescript-eslint](https://registry.npmjs.org/typescript-eslint/latest), [Vite plugin](https://registry.npmjs.org/@sveltejs/vite-plugin-svelte/latest).
 
@@ -100,29 +100,29 @@ Tasks are indexed in [todo.md](todo.md), with acceptance criteria, dependencies,
 
 ## Verification Checkpoints
 
-| After tasks | Evidence required |
-| --- | --- |
-| 01–03 | Bun runs the pinned toolchain; the Svelte shell builds; static checks are configured |
-| 04–06 | Setup states work; malformed schema/foreign origins/invalid Hosts fail closed; no cloud requests with bad setup |
-| 07–09 | Exact token scopes and allowed upstream paths; byte/row/deadline boundaries; sanitized failures; no mutations |
-| 10–12 | Deterministic browser harness exercises the real local API; table selection and empty-schema states work |
-| 13–15 | Heterogeneous records, paging, inspector, refresh, and stale-response handling work in Chromium |
-| 16–18 | Built and dev workflows pass; accessibility and other-browser checks recorded; test-cloud smoke evidence recorded |
+| After tasks | Evidence required                                                                                                 |
+| ----------- | ----------------------------------------------------------------------------------------------------------------- |
+| 01–03       | Bun runs the pinned toolchain; the Svelte shell builds; static checks are configured                              |
+| 04–06       | Setup states work; malformed schema/foreign origins/invalid Hosts fail closed; no cloud requests with bad setup   |
+| 07–09       | Exact token scopes and allowed upstream paths; byte/row/deadline boundaries; sanitized failures; no mutations     |
+| 10–12       | Deterministic browser harness exercises the real local API; table selection and empty-schema states work          |
+| 13–15       | Heterogeneous records, paging, inspector, refresh, and stale-response handling work in Chromium                   |
+| 16–18       | Built and dev workflows pass; accessibility and other-browser checks recorded; test-cloud smoke evidence recorded |
 
 Every logic/behavior task starts with a failing test for the intended behavior, then implements the minimal change. Do not add tests that merely restate static configuration or cosmetic styling. At checkpoints run the applicable spec commands, review the evidence, and request the checkpoint's human review before the next phase. Do not mark a final criterion complete based solely on mocked results when the spec requires real-browser or cloud evidence.
 
 ## Risks and Mitigations
 
-| Risk | Impact | Mitigation |
-| --- | --- | --- |
-| Schema export is stale or uses an unsupported key definition | Wrong table list or confusing display | Validate every entry, preserve primary-key text, document re-export/restart; test deleted, custom, compound, dotted, and empty schemas |
-| REST payload or token-expiration assumptions differ from deployed Dexie | Cannot connect or renew correctly | Validate against official protocol, fail clearly, then verify against a test database before acceptance |
-| Selected table exceeds limits or stalls | Memory pressure or frozen UI | Bound response bytes during streaming, row count before publishing, and deadline through body consumption |
-| Local API is reachable from another website | Privileged records exposed | Loopback binding plus Host/origin checks, no permissive CORS, no redirect-based credential forwarding, tests in proxied and built modes |
-| Late responses race against selection/refresh | Wrong table appears | Abort requests and gate every state update on request generation |
-| Bun differs from tool engine assumptions | Broken dev/build/test commands | Verify exact tools early under Bun; no silent Node fallback |
-| Deep or wide records make inspection expensive | Poor responsiveness | Page the grid, compact previews, escaped JSON fallback for deep values; preserve the source data |
-| No test-cloud access is available | Final integration criterion remains unverified | Complete local fixtures and built app first; request a configured existing test database at the acceptance step, without creating remote resources |
+| Risk                                                                    | Impact                                         | Mitigation                                                                                                                                         |
+| ----------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Schema export is stale or uses an unsupported key definition            | Wrong table list or confusing display          | Validate every entry, preserve primary-key text, document re-export/restart; test deleted, custom, compound, dotted, and empty schemas             |
+| REST payload or token-expiration assumptions differ from deployed Dexie | Cannot connect or renew correctly              | Validate against official protocol, fail clearly, then verify against a test database before acceptance                                            |
+| Selected table exceeds limits or stalls                                 | Memory pressure or frozen UI                   | Bound response bytes during streaming, row count before publishing, and deadline through body consumption                                          |
+| Local API is reachable from another website                             | Privileged records exposed                     | Loopback binding plus Host/origin checks, no permissive CORS, no redirect-based credential forwarding, tests in proxied and built modes            |
+| Late responses race against selection/refresh                           | Wrong table appears                            | Abort requests and gate every state update on request generation                                                                                   |
+| Bun differs from tool engine assumptions                                | Broken dev/build/test commands                 | Verify exact tools early under Bun; no silent Node fallback                                                                                        |
+| Deep or wide records make inspection expensive                          | Poor responsiveness                            | Page the grid, compact previews, escaped JSON fallback for deep values; preserve the source data                                                   |
+| No test-cloud access is available                                       | Final integration criterion remains unverified | Complete local fixtures and built app first; request a configured existing test database at the acceptance step, without creating remote resources |
 
 ## Parallelization
 

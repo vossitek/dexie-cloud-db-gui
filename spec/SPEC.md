@@ -81,15 +81,15 @@ The current REST reference does not document general table-read pagination or a 
 
 ## Tech Stack
 
-| Concern | Choice |
-| --- | --- |
-| Runtime and package manager | Bun 1.4.5, available in this workspace |
-| UI | Svelte 5, TypeScript, component-scoped CSS |
-| Frontend tooling | Vite 8 with the compatible official Svelte plugin |
-| Backend | Bun HTTP server and native fetch |
-| Unit/integration tests | Bun test runner |
-| Browser tests | Playwright |
-| Static checks | TypeScript, svelte-check, ESLint, Prettier with Svelte support |
+| Concern                     | Choice                                                         |
+| --------------------------- | -------------------------------------------------------------- |
+| Runtime and package manager | Bun 1.4.5, available in this workspace                         |
+| UI                          | Svelte 5, TypeScript, component-scoped CSS                     |
+| Frontend tooling            | Vite 8 with the compatible official Svelte plugin              |
+| Backend                     | Bun HTTP server and native fetch                               |
+| Unit/integration tests      | Bun test runner                                                |
+| Browser tests               | Playwright                                                     |
+| Static checks               | TypeScript, svelte-check, ESLint, Prettier with Svelte support |
 
 Resolve compatible exact package versions before implementation, record them in the approved plan and package manifest, and commit `bun.lock`. Validate the chosen Vite/tooling versions under Bun; no Node-only runtime assumption should be hidden in scripts.
 

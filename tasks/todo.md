@@ -49,6 +49,13 @@ Execute sequentially through the approved checkpoints. Each behavior change star
 - **Files:** `eslint.config.js`, `.prettierrc.json`, `.prettierignore`, `package.json`, `tsconfig.json`.
 - **Scope:** Medium.
 
+### Formatting subtask — Normalize approved document spacing
+
+- [x] Subtask complete
+- **Evidence:** Prettier normalized Markdown table spacing in `spec/SPEC.md` and `tasks/plan.md`. A whitespace-insensitive comparison against HEAD confirmed that their content did not change.
+- **Files:** `spec/SPEC.md`, `tasks/plan.md`.
+- **Scope:** Small; separate formatting-only commit.
+
 ### Checkpoint A — Foundation
 
 - [ ] Toolchain checks and the shell build pass; no application dependency/runtime compatibility issue remains unexplained.
