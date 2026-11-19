@@ -29,6 +29,17 @@ Execute sequentially through the approved checkpoints. Each behavior change star
 
 ## 03 — Establish static quality checks
 
+### Configuration subtask — Separate runtime type contexts
+
+- [x] Subtask complete
+- **Evidence:** Svelte check passes with zero errors/warnings and the tools TypeScript check passes without `skipLibCheck`. Browser types include Svelte/Vite; server/tooling types include Bun. Enabled JavaScript checking per the official Vite Svelte template so static `.svelte` components are checked correctly.
+- **Reason:** The first real Svelte check reproduced incompatible ambient declarations when `bun` and `vite/client` types were loaded in one context. Split browser versus server/tooling configuration; retain declaration checking, strict options, and all approved source coverage.
+- **Verify:** `bun run --bun svelte-check --tsconfig ./tsconfig.json --fail-on-warnings`; `bun run --bun tsc --project tsconfig.tools.json --noEmit`.
+- **Files:** `tsconfig.json`, `tsconfig.tools.json`.
+- **Scope:** Small. Perform this configuration correction before completing the shell's static verification. No change to the approved dependencies or quality bar.
+
+### Static quality checks
+
 - [ ] Task complete
 - **Description:** Configure strict Svelte/TypeScript checking, ESLint, and Prettier for application and test sources.
 - **Acceptance:** `check`, `lint`, `format:check`, and the initial build/dev script interfaces work; checks include server/shared sources when added; existing skill files are not reformatted or linted as application code.

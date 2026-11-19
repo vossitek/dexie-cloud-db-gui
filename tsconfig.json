@@ -4,7 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["bun", "vite/client"],
+    "types": ["svelte", "vite/client"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
@@ -15,16 +15,11 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
+    "allowArbitraryExtensions": true,
+    "allowJs": true,
+    "checkJs": true,
     "noEmit": true
   },
-  "include": [
-    "src/**/*",
-    "server/**/*",
-    "shared/**/*",
-    "scripts/**/*",
-    "tests/**/*",
-    "e2e/**/*",
-    "*.ts"
-  ],
+  "include": ["src/**/*", "shared/**/*"],
   "exclude": ["node_modules", "dist", ".agents", ".claude", ".codex"]
 }
