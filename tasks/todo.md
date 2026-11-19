@@ -41,26 +41,29 @@ Execute sequentially through the approved checkpoints. Each behavior change star
 
 ### Static quality checks
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** `bun run check` (zero Svelte errors/warnings plus tools TypeScript), `bun run lint`, `bun run format:check`, and `bun run build` pass. `bun run dev` serves the shell at `http://127.0.0.1:5173/`. Native `bun audit --json` returned no advisories. Dependency lifecycle-script inspection found none; an explicit empty `trustedDependencies` policy is recorded in manifest/lockfile, and a clean frozen install in a temporary directory passed. Static/configuration work has no unit-test suite yet; behavior tests begin at task 04.
 - **Description:** Configure strict Svelte/TypeScript checking, ESLint, and Prettier for application and test sources.
 - **Acceptance:** `check`, `lint`, `format:check`, and the initial build/dev script interfaces work; checks include server/shared sources when added; existing skill files are not reformatted or linted as application code.
 - **Verify:** `bun run check`; `bun run lint`; `bun run format:check`; `bun run build`. Verify all tool processes use Bun.
 - **Dependencies:** 02.
-- **Files:** `eslint.config.js`, `.prettierrc.json`, `.prettierignore`, `package.json`, `tsconfig.json`.
+- **Files:** `eslint.config.js`, `.prettierrc.json`, `.prettierignore`, `package.json`, `bun.lock`. TypeScript changes are tracked in the separate configuration subtask above.
 - **Scope:** Medium.
 
 ### Formatting subtask — Normalize approved document spacing
 
 - [x] Subtask complete
-- **Evidence:** Prettier normalized Markdown table spacing in `spec/SPEC.md` and `tasks/plan.md`. A whitespace-insensitive comparison against HEAD confirmed that their content did not change.
+- **Evidence:** Prettier normalized Markdown table spacing and separator widths in `spec/SPEC.md` and `tasks/plan.md`. A comparison normalizing whitespace and table-separator widths confirmed that their content did not change.
 - **Files:** `spec/SPEC.md`, `tasks/plan.md`.
 - **Scope:** Small; separate formatting-only commit.
 
 ### Checkpoint A — Foundation
 
-- [ ] Toolchain checks and the shell build pass; no application dependency/runtime compatibility issue remains unexplained.
-- [ ] Browser shell is usable and application changes exclude existing local skill configuration.
+- [x] Toolchain checks and the shell build pass; no application dependency/runtime compatibility issue remains unexplained.
+- [x] Browser shell is usable and application changes exclude existing local skill configuration.
 - [ ] Human reviews the checkpoint before proceeding.
+
+**Review state:** Tasks 01–03 are complete; task 04 has not started. Human checkpoint review is pending. Desktop/mobile captures are available at `/tmp/dexie-foundation-desktop.png` and `/tmp/dexie-foundation-mobile.png`. Browser smoke checks used isolated Chromium via Playwright on Bun; Chrome DevTools MCP is unavailable. This is foundation evidence, not final accessibility, cross-browser, or cloud-integration acceptance.
 
 ## 04 — Establish the local request boundary
 

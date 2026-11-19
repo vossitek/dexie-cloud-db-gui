@@ -7,9 +7,18 @@
   "engines": {
     "bun": "1.4.5"
   },
+  "scripts": {
+    "dev": "bun run --bun vite",
+    "build": "bun run --bun vite build",
+    "check": "bun run --bun svelte-check --tsconfig ./tsconfig.json --fail-on-warnings && bun run --bun tsc --project tsconfig.tools.json --noEmit",
+    "lint": "bun run --bun eslint . --max-warnings 0",
+    "format": "bun run --bun prettier --write .",
+    "format:check": "bun run --bun prettier --check ."
+  },
   "dependencies": {
     "svelte": "5.58.0"
   },
+  "trustedDependencies": [],
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.65.1",
