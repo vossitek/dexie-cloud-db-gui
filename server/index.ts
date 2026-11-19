@@ -1,0 +1,28 @@
+import { createHandler, jsonResponse } from './http';
+
+// https://bun.sh/docs/runtime/http/server
+const server = Bun.serve({
+  hostname: '127.0.0.1',
+  port: 3001,
+  development: false,
+  fetch: createHandler({ mode: 'development' }),
+  error: () =>
+    jsonResponse(
+      {
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'The local server could not complete this request.',
+          retryable: true,
+        },
+      },
+      500,
+    ),
+});
+
+console.info('Local API: http://127.0.0.1:3001');
+process.once('SIGINT', () => {
+  void server.stop(true);
+});
+process.once('SIGTERM', () => {
+  void server.stop(true);
+});

@@ -61,13 +61,14 @@ Execute sequentially through the approved checkpoints. Each behavior change star
 
 - [x] Toolchain checks and the shell build pass; no application dependency/runtime compatibility issue remains unexplained.
 - [x] Browser shell is usable and application changes exclude existing local skill configuration.
-- [ ] Human reviews the checkpoint before proceeding.
+- [x] Human reviews the checkpoint before proceeding — approved by the user on 2026-11-19.
 
-**Review state:** Tasks 01–03 are complete; task 04 has not started. Human checkpoint review is pending. Desktop/mobile captures are available at `/tmp/dexie-foundation-desktop.png` and `/tmp/dexie-foundation-mobile.png`. Browser smoke checks used isolated Chromium via Playwright on Bun; Chrome DevTools MCP is unavailable. This is foundation evidence, not final accessibility, cross-browser, or cloud-integration acceptance.
+**Review state:** Tasks 01–03 and checkpoint A are approved; tasks 04–06 are authorized next. Desktop/mobile captures are available at `/tmp/dexie-foundation-desktop.png` and `/tmp/dexie-foundation-mobile.png`. Browser smoke checks used isolated Chromium via Playwright on Bun; Chrome DevTools MCP is unavailable. This is foundation evidence, not final accessibility, cross-browser, or cloud-integration acceptance.
 
 ## 04 — Establish the local request boundary
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** 25 request-boundary tests pass after an initial failing run. Live direct/proxied requests return the expected 404/403 responses and `no-store` headers. Foreign Host/Origin, invalid Fetch Metadata, forwarded-header spoofing, and mutation methods are covered. Inverting the Host allowlist guard caused the suite to fail; the source was restored. Strict checks, lint, and build pass.
 - **Description:** Add the Bun HTTP entry point and enforce local access before routing any API request.
 - **Acceptance:** Bind only to `127.0.0.1`; validate Host and browser-origin context for direct/proxied requests; allow only explicit GET routes with no-store JSON errors and no permissive CORS.
 - **Verify:** `bun test ./tests/request-guard.test.ts`; include foreign Origin, invalid Host, cross-site Fetch Metadata, wrong methods, unknown routes, and development-proxy cases; `bun run check`.

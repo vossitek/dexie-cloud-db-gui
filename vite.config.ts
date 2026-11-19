@@ -9,5 +9,10 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     cors: false,
+    // Preserve Host and browser-origin context for the backend request guard.
+    // https://vite.dev/config/server-options#server-proxy
+    proxy: {
+      '/api/': { target: 'http://127.0.0.1:3001', changeOrigin: false },
+    },
   },
 });
