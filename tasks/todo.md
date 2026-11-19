@@ -78,7 +78,8 @@ Execute sequentially through the approved checkpoints. Each behavior change star
 
 ## 05 — Validate local configuration and schema
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** 66 tests pass across request-boundary, configuration, and schema suites. Missing settings/unsupported URLs stop before file access; schema/file errors are sanitized. Tests cover deleted/empty tables, custom/compound/dotted/Unicode keys, prototype-like table names, and the approved limits. Valid Dexie hidden/auto-increment metadata is retained for inspection. Schema cases are wrapped as data rows so an empty array is not mistaken for a test callback argument list.
 - **Description:** Parse the explicit environment variables and local schema export into safe shared metadata.
 - **Acceptance:** Reject invalid hosted URLs/credentials/schema entries before any upstream request; support empty, deleted, custom, compound, and dotted-key schemas; keep original key definitions and sorted table metadata without assuming `id`.
 - **Verify:** `bun test ./tests/config.test.ts ./tests/schema.test.ts`; assert exact row/byte constants in the contract; `bun run check`.
