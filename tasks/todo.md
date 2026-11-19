@@ -101,7 +101,8 @@ This task is split into the following increments to retain the five-file scope l
 
 - [x] Setup API: `server/http.ts`, `server/index.ts`, `shared/contracts.ts`, `tests/http.test.ts`, `tests/request-guard.test.ts`. Verify status/metadata, safe errors, startup loading, and absence of upstream calls. Evidence: 76 tests pass; status/metadata payloads exclude credentials, setup endpoints make zero cloud calls, and the Bun entry point loads configuration at startup. Strict checks, lint, and build pass.
 - [x] Local configuration template: `.env.example`, `.gitignore`. Evidence: `git check-ignore` confirms local environments, schema exports, keys, and browser artifacts are ignored while `.env.example` remains trackable. The template contains no credentials and explains the current separate-terminal startup commands.
-- [ ] Browser setup status: `src/lib/api.ts`, `src/App.svelte`, `tests/api.test.ts`. Verify response validation and render missing/invalid/configured/unavailable states through the real local API.
+- [x] Browser setup status: `src/lib/api.ts`, `src/App.svelte`, `tests/api.test.ts`. Evidence: 89 tests pass; malformed replies and raw exception/error bodies are rejected. Isolated Chromium verified missing/invalid/configured/unavailable states against real local handlers, retry/keyboard access, no external browser requests, credential redaction, and no overflow at 320/768/1024/1440 pixels. Desktop/mobile screenshots were reviewed; configured status explicitly says cloud access is unverified.
+- [ ] Development file access: `vite.config.ts`, `tests/dev-server.test.ts`. Verify local schema/configuration files cannot bypass API redaction through Vite's static routes. Preserve Vite's default deny patterns and protect the documented local configuration directory.
 
 ### Checkpoint B — Safe setup
 
