@@ -75,25 +75,40 @@ For manual checks without any cloud access, stop the app and run `bun --no-env-f
 
 Record the actual browser version and result after checking table filtering/selection, empty tables, all record fields, horizontal scrolling, inspector open/close/focus, Refresh, keyboard order/focus visibility, and 200% zoom. With VoiceOver, check headings, landmarks, table/control names, dialog labeling, and live loading/error announcements. Error/retry may be exercised with the synthetic browser tests; do not mistake visual presence of a live region for verified spoken output.
 
-## Real-cloud smoke check still open
+## Real-cloud smoke check — completed with schema mismatch
 
-Local `.env` and its schema validate (nine table definitions). No real token or record request has been made during this phase. Confirmation that this is the intended existing **test** database is pending. No credentials or real contents were printed or committed.
+The user confirmed on **2026-11-20** that the existing local configuration targets the intended test database. The built application was started with `bun run start` against that configuration. No credentials, tokens, real record bodies, screenshots, or browser traces were retained.
 
-After that confirmation, run the built app against it without browser traces/screenshots containing real values. Record only sanitized aggregate results: token response accepted with a future millisecond expiry, successful complete read with known records from at least two realms, empty-table result where available, inspector preservation, refresh, and exact read-only upstream methods/scopes. Do not create, seed, or change the remote database. A successful fixture authentication does not meet this requirement.
+The main protocol-observed run used the same `dist/server.js` artifact with a disposable external preload observer. It failed closed on any operation beyond exact `POST /token` and schema-allowlisted `GET /all/<encodedTable>` requests with redirects disabled. The observer confirmed:
+
+- One token request with exactly `ACCESS_DB` and `GLOBAL_READ`, client-credentials grant, and no impersonation claims.
+- A token response with `type: tokens`, a string token, and a future integer expiry in milliseconds. Token material remained in memory.
+- Twelve table reads, zero blocked/unexpected requests, and no upstream data mutations. Supplemental diagnosis and recovery checks also used only token acquisition and reads.
+- All nine configured entries were listed. Seven table reads succeeded: three nonempty results (2, 1, and 15 records) and four empty results. Two successful results contained explicit records from two distinct realms.
+
+Isolated Chromium **159.0.8154.6** verified the built UI against the real database: a 15-record multi-realm result, exact first-page row count, complete JSON inspector equality with the loaded record, Escape/focus restoration, no inspector fetch, fresh Refresh response/timestamp, and an empty-table state. There were zero console/page problems, zero external browser requests, and zero browser mutations. This dataset did not provide more than 50 records in a selected table; pagination remains covered by synthetic browser evidence.
+
+Two reserved-name local schema entries, `$$baseRevs` and `$$logins`, returned upstream **HTTP 422**, with small HTML error responses indicating that the server does not know their primary-key definitions. They were rejected as `INVALID_RESPONSE`; no partial or fabricated records were shown. The returned instruction to sync/import a schema was not executed, since this task authorizes no cloud/schema mutation. The observed cause is a mismatch between those local metadata entries and the server's known tables, rather than a token, JSON preservation, or browser-rendering failure.
+
+A separate recovery check used the actual `bun run start` command and verified both failure states, removal of stale rows/timestamps, and recovery to a supported table after each. These checks passed twice without a restart. The existing local schema and cloud schema were left unchanged. Supply a schema-only export matching the configured server before claiming all configured entries are readable; do not silently filter entries or create remote schema definitions to obtain a pass.
+
+Only sanitized aggregates were written to `/tmp/dexie-real-cloud-summary.json`, `/tmp/dexie-real-cloud-protocol-summary.json`, `/tmp/dexie-cloud-diagnostic-summary.json`, and `/tmp/dexie-cloud-recovery-summary.json`. Disposable checks: `/tmp/dexie-real-cloud-smoke.ts`, `/tmp/dexie-cloud-observer.ts`, `/tmp/dexie-cloud-diagnose.ts`, and `/tmp/dexie-cloud-error-recovery.ts`. All app/browser processes created by these checks were stopped. These temporary files are not required to run the application.
+
+The live protocol and supported-table workflow are verified. The schema mismatch and previously listed manual browser/accessibility checks remain open for final acceptance.
 
 ## Specification success criteria
 
-| Criterion                                                          | Evidence                                                                                             | Status                                                  |
-| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| 1. Existing hosted database/global read connection                 | Local setup/configuration tests; setup docs                                                          | Real-cloud smoke open                                   |
-| 2. Every non-deleted schema table, including empty                 | Schema unit tests and navigation browser suite in both modes                                         | Automated pass                                          |
-| 3. Complete supported-size multi-realm reads, 50-row paging        | Response/API boundary tests; 0/1/50/51-row browser cases; exact 10,000-row/10 MiB backend cases      | Synthetic pass; real multi-realm confirmation open      |
-| 4. Custom/compound keys and heterogeneous/typed/blob values        | Schema/record/JSON unit tests; records and inspector browser suites; 20,000-level input              | Automated pass                                          |
-| 5. Complete keyboard-accessible inspector                          | Inspector/accessibility suites and synthetic visual review                                           | Automated pass; manual browser/AT checks open           |
-| 6. Refresh, race safety, clear failures/recovery                   | Controlled Svelte race tests, delayed table-switch UI tests, five error/retry scenarios              | Automated pass                                          |
-| 7. Read-only protocol, no token leaks, hostile text inert          | Authentication/data/API tests; browser security/inspector suites                                     | Automated pass                                          |
-| 8. Local-only access, no persistent record cache                   | Guard/static/process tests; browser storage/CORS/no-store checks in both modes                       | Automated pass                                          |
-| 9. Full commands and equivalent built workflow, actual integration | Command tests; development/built Chromium suites; strict checks/build                                | Local pass; cloud and required other-browser smoke open |
-| 10. Complete setup/troubleshooting docs without secrets/mutations  | `README.md`, `docs/local-setup.md`, `.env.example`, reviewed against code and official CLI/REST docs | Complete                                                |
+| Criterion                                                          | Evidence                                                                                             | Status                                                                            |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| 1. Existing hosted database/global read connection                 | Local setup/configuration tests; built real-cloud authentication/read smoke; setup docs              | Live authentication/global reads pass                                             |
+| 2. Every non-deleted schema table, including empty                 | Schema unit tests and navigation browser suite in both modes                                         | Automated pass                                                                    |
+| 3. Complete supported-size multi-realm reads, 50-row paging        | Response/API boundary tests; 0/1/50/51-row browser cases; exact 10,000-row/10 MiB backend cases      | Synthetic boundaries/paging and real multi-realm reads pass                       |
+| 4. Custom/compound keys and heterogeneous/typed/blob values        | Schema/record/JSON unit tests; records and inspector browser suites; 20,000-level input              | Automated pass                                                                    |
+| 5. Complete keyboard-accessible inspector                          | Inspector/accessibility suites and synthetic visual review                                           | Automated pass; manual browser/AT checks open                                     |
+| 6. Refresh, race safety, clear failures/recovery                   | Controlled Svelte race tests, delayed table-switch UI tests, five error/retry scenarios              | Automated pass                                                                    |
+| 7. Read-only protocol, no token leaks, hostile text inert          | Authentication/data/API tests; browser security/inspector suites                                     | Automated pass                                                                    |
+| 8. Local-only access, no persistent record cache                   | Guard/static/process tests; browser storage/CORS/no-store checks in both modes                       | Automated pass                                                                    |
+| 9. Full commands and equivalent built workflow, actual integration | Command tests; development/built Chromium suites; strict checks/build                                | Local and supported cloud workflow pass; schema mismatch and manual browsers open |
+| 10. Complete setup/troubleshooting docs without secrets/mutations  | `README.md`, `docs/local-setup.md`, `.env.example`, reviewed against code and official CLI/REST docs | Complete                                                                          |
 
-Checkpoint F remains open until the manual/integration evidence above and final human review are complete. No verification threshold, required browser, or cloud criterion has been waived.
+Checkpoint F remains open until the schema mismatch, manual browser/accessibility evidence above, and final human review are resolved. No verification threshold, required browser, or cloud criterion has been waived.

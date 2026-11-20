@@ -66,6 +66,8 @@ Each table must fit **10,000 records** and **10 MiB (10,485,760 response bytes)*
 | Forbidden / foreign origin                                | Use the documented `127.0.0.1` URL and matching mode/port; the API intentionally rejects other browser origins and Hosts |
 | Unexpected upstream response                              | Check server/protocol compatibility; raw upstream details are intentionally withheld from browser errors                 |
 
+An upstream 422 saying a table's primary key is unknown indicates that the supplied schema entry is not registered for that hosted database. The app safely reports an invalid response. Re-export a matching schema-only file and restart; do not import or create remote schema merely to make an inspection request pass. During acceptance testing, two reserved-name metadata entries produced this response while the configured server's other seven tables were readable. The detailed evidence is in [validation](validation.md).
+
 The explorer uses the documented [Dexie REST API](https://dexie.org/docs/cloud/rest-api): credential token acquisition and complete selected-table reads. Upstream credential-bearing redirects are refused. A failed refresh removes old data and its timestamp; successful retry requires no restart unless local configuration changed.
 
 ## Final integration check
