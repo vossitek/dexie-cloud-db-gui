@@ -1,8 +1,21 @@
 import { createHandler, jsonResponse } from './http';
 import { loadConfiguration } from './config';
 import { REQUEST_TIMEOUT_MS } from '../shared/contracts';
+import { createStaticHandler } from './static';
+import { fileURLToPath } from 'node:url';
 
 const setup = await loadConfiguration(process.env);
+const mode = process.argv.includes('--development')
+  ? 'development'
+  : 'production';
+const api = createHandler({ mode, setup });
+const handler =
+  mode === 'development'
+    ? api
+    : await createStaticHandler(
+        fileURLToPath(new URL('../dist/', import.meta.url)),
+        api,
+      );
 
 // https://bun.sh/docs/runtime/http/server
 const server = Bun.serve({
@@ -11,7 +24,7 @@ const server = Bun.serve({
   development: false,
   // Let the application return its structured timeout before closing the socket.
   idleTimeout: Math.ceil(REQUEST_TIMEOUT_MS / 1000) + 5,
-  fetch: createHandler({ mode: 'development', setup }),
+  fetch: handler,
   error: () =>
     jsonResponse(
       {

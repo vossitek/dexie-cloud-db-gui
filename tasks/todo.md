@@ -253,13 +253,16 @@ Implementation files: `src/lib/explorer-state.svelte.ts`, `src/components/Record
 
 ## 16 — Run the app through its final commands
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** All 362 unit/backend tests pass, including 18 static-path/security cases and five real process lifecycle tests. Strict checks, lint, formatting, frontend build and Bun server bundling pass. Both signals release both development ports; either occupied port causes coordinated shutdown. Built startup serves the shell/API on port 3001, rejects development/foreign origins, private paths and symlink escapes, and never falls back from API routes to HTML. Cloud settings are blanked in process tests.
 - **Description:** Add the development supervisor and built static serving, completing the command contract.
 - **Acceptance:** `dev` launches/stops both loopback processes cleanly; `build` validates the server entry point and emits frontend assets; `start` serves built assets/API safely from one origin, with no path traversal or API-to-HTML fallback.
 - **Verify:** `bun test ./tests/static.test.ts`; `bun run build`; exercise `bun run dev` and `bun run start` separately, including origin checks and shutdown; `bun run check`.
 - **Dependencies:** 15.
 - **Files:** `server/static.ts`, `server/index.ts`, `scripts/dev.ts`, `package.json`, `tests/static.test.ts`.
 - **Scope:** Medium.
+
+Implementation slices: built handler (`server/static.ts`, `tests/static.test.ts`), then command wiring (`server/index.ts`, `scripts/dev.ts`, `package.json`, `tests/commands.test.ts`). The build checks browser/server types, emits Vite assets, and bundles the Bun entry point to `dist/server.js`; that bundle is outside the public static allowlist. Full browser workflow in built mode follows in task 17.
 
 ## 17 — Verify security and accessible browser behavior
 

@@ -9,8 +9,9 @@
   },
   "scripts": {
     "test:e2e": "bun run --bun playwright test",
-    "dev": "bun run --bun vite",
-    "build": "bun run --bun vite build",
+    "dev": "bun scripts/dev.ts",
+    "build": "bun run check && bun run --bun vite build && bun build server/index.ts --target=bun --outdir dist --entry-naming server.js",
+    "start": "bun dist/server.js",
     "check": "bun run --bun svelte-check --tsconfig ./tsconfig.json --fail-on-warnings && bun run --bun tsc --project tsconfig.tools.json --noEmit",
     "lint": "bun run --bun eslint . --max-warnings 0",
     "format": "bun run --bun prettier --write .",
