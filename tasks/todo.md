@@ -225,6 +225,8 @@ Implementation slices (each stays within the five-file limit): browser record cl
 - **Files:** `src/components/RecordInspector.svelte`, `src/components/JsonValue.svelte`, `src/App.svelte`, `e2e/inspector.spec.ts`.
 - **Scope:** Medium.
 
+Implementation slices: a JSON display formatter and its unit tests (`src/lib/json.ts`, `tests/json.test.ts`), then the inspector and opening controls (`src/components/RecordInspector.svelte`, `src/components/JsonValue.svelte`, `src/components/RecordBrowser.svelte`, `src/components/RecordTable.svelte`, `e2e/inspector.spec.ts`). The inspector uses the selected in-memory record; no additional endpoint is added.
+
 ## 15 — Refresh without stale results
 
 - [ ] Task complete
