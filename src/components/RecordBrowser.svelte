@@ -1,9 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { RecordsResponse, TableMetadata } from '../../shared/contracts';
+  import type {
+    DatabaseRecord,
+    RecordsResponse,
+    TableMetadata,
+  } from '../../shared/contracts';
   import { getRecords, RecordRequestError } from '../lib/api';
   import { deriveColumns } from '../lib/records';
   import RecordTable from './RecordTable.svelte';
+  import RecordInspector from './RecordInspector.svelte';
 
   let { table }: { table: TableMetadata } = $props();
   // Loaded records are immutable; avoid recursively proxying a complete table.
@@ -12,6 +17,10 @@
   let pending = $state(true);
   let failure = $state<string | null>(null);
   let pageNumber = $state(1);
+  let inspected = $state.raw<{
+    record: DatabaseRecord;
+    opener: HTMLButtonElement;
+  } | null>(null);
   let controller: AbortController | undefined;
   const columns = $derived(
     result ? deriveColumns(result.records, table.keyPaths) : [],
@@ -25,6 +34,7 @@
     failure = null;
     pending = true;
     pageNumber = 1;
+    inspected = null;
     try {
       const loaded = await getRecords(table.name, current.signal);
       if (!current.signal.aborted) result = loaded;
@@ -97,6 +107,20 @@
     {pageNumber}
     onpage={(page: number) => {
       pageNumber = page;
+      inspected = null;
+    }}
+    oninspect={(record: DatabaseRecord, opener: HTMLButtonElement) => {
+      inspected = { record, opener };
+    }}
+  />
+{/if}
+{#if inspected}
+  <RecordInspector
+    record={inspected.record}
+    opener={inspected.opener}
+    tableName={table.name}
+    onclose={() => {
+      inspected = null;
     }}
   />
 {/if}

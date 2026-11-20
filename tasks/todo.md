@@ -217,7 +217,8 @@ Implementation slices (each stays within the five-file limit): browser record cl
 
 ## 14 — Inspect a complete record
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** Seven inspector Chromium cases pass: complete in-memory records with no extra data/blob requests, keyboard opening, both Tab-loop directions, Escape, opener-focus restoration, long/hostile/unusual own properties, a 20,000-level record beyond Chromium's native stringifier limit, page-two inspection without an id assumption, and 320/1440-pixel layouts. Six JSON formatter tests and all 339 unit/backend tests pass. The formatter preserves full values and uses a tested iterative fallback for native recursion limits; a boundary mutation was caught and restored. A native dialog supplies modality and Escape; explicit edge-of-dialog Tab handling fixes an observed Chromium focus escape. JSON is shown in a labeled read-only text field, never raw HTML. Desktop/mobile inspector captures were reviewed. Strict checks, lint, formatting, and build pass.
 - **Description:** Add the keyboard-accessible record inspector without another data fetch.
 - **Acceptance:** Reveal all returned properties and full values with readable nested/typed JSON; never download blobs or execute stored content; close accessibly and restore focus to the opening control.
 - **Verify:** `bun run test:e2e -- --project=chromium e2e/inspector.spec.ts`; verify nested/long values, owner/realmId, keyboard focus, hostile content, and no extra upstream requests; `bun run check`.

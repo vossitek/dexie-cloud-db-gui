@@ -7,12 +7,14 @@
     columns,
     pageNumber,
     onpage,
+    oninspect,
   }: {
     name: string;
     records: readonly DatabaseRecord[];
     columns: readonly string[];
     pageNumber: number;
     onpage: (page: number) => void;
+    oninspect: (record: DatabaseRecord, opener: HTMLButtonElement) => void;
   } = $props();
   const page = $derived(paginateRecords(records, pageNumber));
   let scrollRegion: HTMLDivElement | undefined;
@@ -51,6 +53,7 @@
               {column || '(empty field name)'}
             </span>
           </th>{/each}
+        <th scope="col" class="inspect-column">Inspect</th>
       </tr>
     </thead>
     <tbody>
@@ -59,6 +62,16 @@
           {#each columns as column (column)}<td>
               <span class="cell">{previewCell(record, column)}</span>
             </td>{/each}
+          <td class="inspect-column">
+            <button
+              class="action-button"
+              type="button"
+              aria-label={`Inspect record ${page.start + index}`}
+              onclick={(event) => oninspect(record, event.currentTarget)}
+            >
+              Inspect
+            </button>
+          </td>
         </tr>
       {/each}
     </tbody>
@@ -125,6 +138,15 @@
     max-width: 18rem;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  .inspect-column {
+    position: sticky;
+    right: 0;
+    background: var(--color-surface);
+    box-shadow: -1px 0 0 var(--color-border);
+  }
+  th.inspect-column {
+    background: var(--color-accent-soft);
   }
   .record-pagination {
     display: flex;
