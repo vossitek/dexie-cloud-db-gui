@@ -8,6 +8,7 @@ import {
   fixtureFetch,
   fixtureSchema,
   fixtureTime,
+  recordsForCount,
 } from './fixtures';
 
 const configured = await loadConfiguration(fixtureEnvironment, () =>
@@ -38,6 +39,21 @@ const handlers = new Map<string, ReturnType<typeof createHandler>>(
 );
 const configuredHandler = handlers.get('configured');
 if (!configuredHandler) throw new Error('Missing configured test handler');
+
+for (const count of [0, 1, 50, 51]) {
+  const records = recordsForCount(count);
+  handlers.set(
+    `records-${count}`,
+    createHandler({
+      mode: 'development',
+      setup: configured,
+      upstream: {
+        fetch: (url, init) => fixtureFetch(url, init, records),
+        now: () => fixtureTime,
+      },
+    }),
+  );
+}
 
 // Do not load the developer's environment or reuse their running app.
 const vite = await createServer({

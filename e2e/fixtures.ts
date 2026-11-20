@@ -59,6 +59,7 @@ export const fixtureRecords: Record<string, DatabaseRecord[]> = {
 export async function fixtureFetch(
   url: string,
   init: RequestInit,
+  itemRecords?: readonly DatabaseRecord[],
 ): Promise<Response> {
   const request = new Request(url, init);
   assert.equal(request.redirect, 'manual');
@@ -84,5 +85,19 @@ export async function fixtureFetch(
       `${fixtureEnvironment.DEXIE_DATABASE_URL}/all/${encodeURIComponent(name)}`,
   );
   assert(table, 'Unexpected synthetic upstream path');
-  return Response.json(fixtureRecords[table]);
+  return Response.json(
+    table === 'items' && itemRecords !== undefined
+      ? itemRecords
+      : fixtureRecords[table],
+  );
+}
+
+export function recordsForCount(count: number): DatabaseRecord[] {
+  return Array.from({ length: count }, (_, index) => ({
+    ...(fixtureRecords.items?.[index] ?? {
+      key: `row-${index + 1}`,
+      realmId: `realm-${(index % 2) + 1}`,
+    }),
+    ...(index === 50 ? { pageTwoOnly: 'Only on page two' } : {}),
+  }));
 }
