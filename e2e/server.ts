@@ -2,6 +2,7 @@ import { createServer } from 'vite';
 import viteConfig from '../vite.config';
 import { loadConfiguration, type SetupState } from '../server/config';
 import { createHandler, jsonResponse } from '../server/http';
+import { createStaticHandler } from '../server/static';
 import { REQUEST_TIMEOUT_MS, type DatabaseRecord } from '../shared/contracts';
 import {
   fixtureEnvironment,
@@ -10,6 +11,7 @@ import {
   fixtureTime,
   recordsForCount,
 } from './fixtures';
+const built = process.env.DEXIE_E2E_MODE === 'built';
 
 const configured = await loadConfiguration(fixtureEnvironment, () =>
   Promise.resolve(JSON.stringify(fixtureSchema)),
@@ -25,7 +27,7 @@ function fixtureHandler(
 ) {
   let time = fixtureTime;
   return createHandler({
-    mode: 'development',
+    mode: built ? 'production' : 'development',
     setup,
     upstream: {
       fetch: async (url, init) => {
@@ -58,23 +60,27 @@ for (const count of [0, 1, 50, 51]) {
 }
 
 // Do not load the developer's environment or reuse their running app.
-const vite = await createServer({
-  ...viteConfig,
-  configFile: false,
-  envDir: false,
-});
+const vite = built
+  ? undefined
+  : await createServer({
+      ...viteConfig,
+      configFile: false,
+      envDir: false,
+    });
 let api: ReturnType<typeof Bun.serve> | undefined;
+const route = (request: Request) =>
+  (
+    handlers.get(
+      request.headers.get('X-Dexie-Test-Scenario') ?? 'configured',
+    ) ?? configuredHandler
+  )(request);
+const handler = built ? await createStaticHandler('dist', route) : route;
 try {
   api = Bun.serve({
     hostname: '127.0.0.1',
     port: 3001,
     idleTimeout: Math.ceil(REQUEST_TIMEOUT_MS / 1000) + 5,
-    fetch: (request) =>
-      (
-        handlers.get(
-          request.headers.get('X-Dexie-Test-Scenario') ?? 'configured',
-        ) ?? configuredHandler
-      )(request),
+    fetch: handler,
     error: () =>
       jsonResponse(
         {
@@ -87,15 +93,15 @@ try {
         500,
       ),
   });
-  await vite.listen();
+  await vite?.listen();
 } catch (error) {
   await api?.stop(true);
-  await vite.close();
+  await vite?.close();
   throw error;
 }
 
 async function stop() {
-  await Promise.all([api?.stop(true), vite.close()]);
+  await Promise.all([api?.stop(true), vite?.close()]);
 }
 process.once('SIGINT', () => {
   void stop();

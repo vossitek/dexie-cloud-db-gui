@@ -3,6 +3,7 @@ import { fixtureRecords } from './fixtures';
 
 test('loads the real application and setup API without external requests or browser errors', async ({
   page,
+  baseURL,
 }, testInfo) => {
   const problems: string[] = [];
   const externalRequests: string[] = [];
@@ -12,7 +13,7 @@ test('loads the real application and setup API without external requests or brow
       problems.push(message.text());
   });
   await page.route('**/*', async (route) => {
-    if (new URL(route.request().url()).origin !== 'http://127.0.0.1:5173') {
+    if (new URL(route.request().url()).origin !== baseURL) {
       externalRequests.push(route.request().url());
       await route.abort();
     } else await route.continue();
