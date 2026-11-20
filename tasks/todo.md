@@ -238,6 +238,10 @@ Implementation slices: a JSON display formatter and its unit tests (`src/lib/jso
 - **Files:** `src/lib/explorer-state.svelte.ts`, `src/lib/api.ts`, `src/App.svelte`, `e2e/refresh.spec.ts`.
 - **Scope:** Medium.
 
+Implementation files: `src/lib/explorer-state.svelte.ts`, `src/components/RecordBrowser.svelte`, `e2e/refresh.spec.ts`, `e2e/explorer-state.spec.ts`, and `e2e/server.ts`. The browser client already landed with task 13. State tests run the real Svelte-compiled module in Chromium with controlled promises, including loaders that ignore cancellation; UI tests keep using the local handlers. The test server advances a synthetic fetch clock so fresh reads have distinguishable timestamps.
+
+- [x] Configuration correction: `eslint.config.js` now applies the existing TypeScript parser to `.svelte.ts` rune modules as documented by eslint-plugin-svelte. The first lint run reproduced a JavaScript-parser syntax error on the new state module; extending the file mapping resolves it without disabling rules or excluding source. Full lint and strict type checks pass. This is a separate configuration-only increment.
+
 ### Checkpoint E — Complete browsing workflow
 
 - [ ] Record paging, full inspection, focus handling, refresh, and request-race tests pass.
