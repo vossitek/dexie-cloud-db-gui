@@ -19,14 +19,14 @@ test('loads the real application and setup API without external requests or brow
   });
   await page.goto('/');
   await expect(
-    page.getByRole('heading', { name: 'Database configuration is ready' }),
+    page.getByRole('heading', { name: 'Select a table' }),
   ).toBeVisible();
   await expect(
     page.getByText('https://fixture-db.dexie.cloud', { exact: true }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Check setup again' }).click();
   await expect(
-    page.getByRole('heading', { name: 'Database configuration is ready' }),
+    page.getByRole('heading', { name: 'Select a table' }),
   ).toBeVisible();
   await expect(page.locator('body')).not.toContainText('fixture-secret');
   await expect(page.locator('body')).not.toContainText('fixture-client');

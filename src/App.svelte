@@ -1,11 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { StatusResponse } from '../shared/contracts';
-  import { getStatus } from './lib/api';
+  import type { StatusResponse, TableMetadata } from '../shared/contracts';
+  import { getStatus, getTables } from './lib/api';
+  import TableList from './components/TableList.svelte';
 
   let status = $state<StatusResponse | null>(null);
   let pending = $state(true);
   let failure = $state<string | null>(null);
+  let tables = $state<TableMetadata[] | null>(null);
+  let tablesPending = $state(false);
+  let tablesFailure = $state<string | null>(null);
+  let selectedTable = $state<TableMetadata | null>(null);
   let controller: AbortController | undefined;
 
   function checkSetup() {
@@ -15,9 +20,29 @@
     pending = true;
     failure = null;
     status = null;
+    tables = null;
+    tablesPending = false;
+    tablesFailure = null;
+    selectedTable = null;
     void getStatus(current.signal)
-      .then((result) => {
-        if (!current.signal.aborted) status = result;
+      .then(async (result) => {
+        if (current.signal.aborted) return;
+        status = result;
+        pending = false;
+        if (result.state !== 'configured') return;
+        tablesPending = true;
+        try {
+          const loaded = await getTables(current.signal);
+          if (!current.signal.aborted) tables = loaded;
+        } catch (error) {
+          if (!current.signal.aborted)
+            tablesFailure =
+              error instanceof Error
+                ? error.message
+                : 'Cannot load tables. Check setup and try again.';
+        } finally {
+          if (!current.signal.aborted) tablesPending = false;
+        }
       })
       .catch((error: unknown) => {
         if (!current.signal.aborted) {
@@ -74,11 +99,25 @@
 
     <nav class="table-navigation" aria-labelledby="tables-label">
       <h2 class="eyebrow" id="tables-label">Tables</h2>
-      <p class="muted small">
-        {status?.state === 'configured'
-          ? 'A schema export is configured.'
-          : 'Your tables will appear here after a schema is configured.'}
-      </p>
+      {#if tablesPending}
+        <p class="muted small" role="status">Loading table names…</p>
+      {:else if tablesFailure}
+        <p class="muted small">Table names are unavailable.</p>
+      {:else if tables?.length}
+        <TableList
+          {tables}
+          selectedName={selectedTable?.name ?? null}
+          onselect={(table: TableMetadata) => {
+            selectedTable = table;
+          }}
+        />
+      {:else}
+        <p class="muted small">
+          {tables
+            ? 'The schema export contains no tables.'
+            : 'Your tables will appear here after a schema is configured.'}
+        </p>
+      {/if}
     </nav>
 
     <div class="sidebar-footer">
@@ -101,11 +140,15 @@
 
     <section class="records-region" aria-labelledby="records-label">
       <div class="records-header">
-        <h2 id="records-label">Records</h2>
+        <h2 id="records-label">{selectedTable?.name ?? 'Records'}</h2>
         <span class="muted small">No records loaded</span>
       </div>
 
-      <div class="empty-state" aria-live="polite" aria-busy={pending}>
+      <div
+        class="empty-state"
+        aria-live="polite"
+        aria-busy={pending || tablesPending}
+      >
         <div class="empty-symbol" aria-hidden="true">
           <svg viewBox="0 0 32 32" fill="none">
             <rect x="4" y="5" width="24" height="22" rx="3"></rect>
@@ -121,12 +164,29 @@
         {:else if status?.state === 'unconfigured'}
           <h3>Database setup required</h3>
           <p>{status.error.message}</p>
-        {:else if status?.state === 'configured'}
-          <h3>Database configuration is ready</h3>
+        {:else if tablesPending}
+          <h3>Loading tables</h3>
+          <p>Reading table names from the configured schema export.</p>
+        {:else if tablesFailure}
+          <h3>Tables unavailable</h3>
+          <p>{tablesFailure}</p>
+        {:else if tables?.length === 0}
+          <h3>No tables in schema export</h3>
           <p>
-            Your local settings and schema export are valid. No records have
-            been requested.
+            The local configuration is valid. Re-export the schema and restart
+            the API if you expected tables.
           </p>
+        {:else if selectedTable}
+          <h3>Table selected</h3>
+          <p>
+            Primary key: <code>
+              {selectedTable.primaryKey || 'Out-of-line key'}
+            </code>
+          </p>
+          <p>Schema metadata is available. No records have been requested.</p>
+        {:else if status?.state === 'configured'}
+          <h3>Select a table</h3>
+          <p>Choose a table from the sidebar to inspect its schema metadata.</p>
         {/if}
         <button
           class="setup-retry"
@@ -148,6 +208,10 @@
 
 <style>
   .database-url {
+    overflow-wrap: anywhere;
+  }
+  #records-label,
+  code {
     overflow-wrap: anywhere;
   }
   .setup-retry {

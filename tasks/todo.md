@@ -172,7 +172,8 @@ Implementation slices (each stays within the five-file limit):
 
 ## 11 — Navigate configured tables
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** 31 browser-client unit tests (including 18 new metadata cases) and all 273 backend/unit tests pass. Nine navigation tests plus three smoke tests pass in isolated Chromium through the real API. Evidence covers alphabetically ordered tables (including empty/access-control tables), compound/dotted key metadata, filtering that preserves selection, keyboard use, valid empty schemas, setup failure, metadata loading/failure/retry, and 320/768/1024/1440-pixel layouts without overflow. Desktop/mobile screenshots were visually reviewed; the normal browser console is clean. Strict checks, lint, formatting, and build pass. Disabling duplicate-name rejection failed its unit test; the original code was restored and the test passed again. Selection displays schema identity only; record fetching/rendering remains task 13.
 - **Description:** Add the validated browser API client and searchable table sidebar.
 - **Acceptance:** List every configured non-deleted table alphabetically, including empty/access-control tables; filtering changes navigation only; selection identifies its key definition and distinguishes an empty schema from setup failure.
 - **Verify:** `bun test ./tests/api.test.ts`; `bun run test:e2e -- --project=chromium e2e/navigation.spec.ts`; `bun run check`.
