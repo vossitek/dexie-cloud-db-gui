@@ -111,7 +111,7 @@ This task is split into the following increments to retain the five-file scope l
 - [x] Missing, invalid, and valid local setup states are visible; invalid setup triggers no upstream request.
 - [x] Human reviews the checkpoint before proceeding — approved by the user on 2026-11-19.
 
-**Review state:** Tasks 04–06 and checkpoint B are approved; task 07 is complete. Tasks 08–09 remain before checkpoint C. Synthetic browser captures: `/tmp/dexie-setup-missing.png`, `/tmp/dexie-setup-invalid.png`, `/tmp/dexie-setup-configured.png`, `/tmp/dexie-setup-unavailable.png`, and `/tmp/dexie-setup-mobile.png`. The disposable browser verification script is `/tmp/dexie-setup-smoke.ts`; permanent browser-suite setup remains task 10. No real cloud authentication or record fetch has been attempted.
+**Review state:** Tasks 04–06 and checkpoint B are approved; tasks 07–08 are complete. Task 09 remains before checkpoint C. Synthetic browser captures: `/tmp/dexie-setup-missing.png`, `/tmp/dexie-setup-invalid.png`, `/tmp/dexie-setup-configured.png`, `/tmp/dexie-setup-unavailable.png`, and `/tmp/dexie-setup-mobile.png`. The disposable browser verification script is `/tmp/dexie-setup-smoke.ts`; permanent browser-suite setup remains task 10. No real cloud authentication or record fetch has been attempted.
 
 ## 07 — Obtain read-only cloud tokens
 
@@ -126,7 +126,8 @@ This task is split into the following increments to retain the five-file scope l
 
 ## 08 — Bound upstream response consumption
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** 44 focused response-consumption tests pass after failing tests for the reader and cancellation/deadline behavior. The full suite passes 174 tests across eight files with loopback socket access for the existing Vite regression tests; strict checks, lint, formatting, and build pass. Tests cover exact 10 MiB / 10,000-record boundaries, single/chunked excess, absent/misleading Content-Length, multibyte and malformed UTF-8, JSON/record validation, non-finite numbers, 20,000-level nesting, preserved Dexie typed envelopes/blob references and unusual own properties, sanitized stream failures, client aborts, upstream deadline signals, stalled bodies, and cleanup that rejects or never settles. A mutated inclusive byte-limit check failed all three exact-boundary cases; the implementation was restored and those tests passed again. Task 09 must pass the fetch's deadline/client signal through to this reader so the deadline covers both fetch and body consumption. Only synthetic response streams were used; no cloud calls were made.
 - **Description:** Read upstream responses with byte, record, cancellation, and deadline limits before publishing data.
 - **Acceptance:** Accept exactly 10 MiB and 10,000 records; reject either excess without returning a partial result; preserve typed JSON and terminate stalled/cancelled reads.
 - **Verify:** `bun test ./tests/read-response.test.ts`; test chunked/no-content-length responses, multibyte text, invalid JSON/shape, boundary and over-boundary results, and timeout during body consumption; `bun run check`.
