@@ -204,7 +204,8 @@ Implementation slices: browser metadata client and tests (`src/lib/api.ts`, `tes
 
 ## 13 — Browse records in display pages
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** All 333 unit/backend tests and 20 Chromium tests pass, including eight record-grid cases for 0/1/50/51 records, late columns, multi-realm values, hostile strings, loading/failure/retry, and keyboard-controlled horizontal scrolling at 320/1440 pixels. The browser client validates full records and canonical fetch timestamps, preserves typed/blob values, sanitizes errors, and accepts exactly 10,000 records. Selecting a table now fetches and renders its complete result; display paging makes no additional request. Desktop/mobile screenshots were reviewed; page overflow and normal browser console errors/warnings are absent. Native scroll buttons provide keyboard access without disabling Svelte accessibility checks. Strict checks, lint, formatting, and build pass. No real cloud requests were made during validation.
 - **Description:** Render the selected table's complete loaded result as an accessible record table.
 - **Acceptance:** Show 50 rows per display page, accurate count/page state, key-first columns, and successful-fetch time; support empty/error/loading states; compact/truncated cells retain the full underlying values.
 - **Verify:** `bun run test:e2e -- --project=chromium e2e/records.spec.ts`; include 0/1/50/51 records, late-appearing fields, multi-realm values, hostile strings, and horizontal scrolling; `bun run check`; `bun run build`.

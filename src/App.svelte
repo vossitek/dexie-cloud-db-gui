@@ -3,6 +3,7 @@
   import type { StatusResponse, TableMetadata } from '../shared/contracts';
   import { getStatus, getTables } from './lib/api';
   import TableList from './components/TableList.svelte';
+  import RecordBrowser from './components/RecordBrowser.svelte';
 
   let status = $state<StatusResponse | null>(null);
   let pending = $state(true);
@@ -139,69 +140,69 @@
     </header>
 
     <section class="records-region" aria-labelledby="records-label">
-      <div class="records-header">
-        <h2 id="records-label">{selectedTable?.name ?? 'Records'}</h2>
-        <span class="muted small">No records loaded</span>
-      </div>
-
-      <div
-        class="empty-state"
-        aria-live="polite"
-        aria-busy={pending || tablesPending}
-      >
-        <div class="empty-symbol" aria-hidden="true">
-          <svg viewBox="0 0 32 32" fill="none">
-            <rect x="4" y="5" width="24" height="22" rx="3"></rect>
-            <path d="M4 12h24M12 12v15M4 19h24"></path>
-          </svg>
+      {#if selectedTable}
+        {#key selectedTable.name}
+          <RecordBrowser table={selectedTable} />
+        {/key}
+      {:else}
+        <div class="records-header">
+          <h2 id="records-label">Records</h2>
+          <span class="muted small">No records loaded</span>
         </div>
-        {#if pending}
-          <h3>Checking local setup</h3>
-          <p>Reading the configuration status of your local workspace.</p>
-        {:else if failure}
-          <h3>Local API unavailable</h3>
-          <p>{failure}</p>
-        {:else if status?.state === 'unconfigured'}
-          <h3>Database setup required</h3>
-          <p>{status.error.message}</p>
-        {:else if tablesPending}
-          <h3>Loading tables</h3>
-          <p>Reading table names from the configured schema export.</p>
-        {:else if tablesFailure}
-          <h3>Tables unavailable</h3>
-          <p>{tablesFailure}</p>
-        {:else if tables?.length === 0}
-          <h3>No tables in schema export</h3>
-          <p>
-            The local configuration is valid. Re-export the schema and restart
-            the API if you expected tables.
-          </p>
-        {:else if selectedTable}
-          <h3>Table selected</h3>
-          <p>
-            Primary key: <code>
-              {selectedTable.primaryKey || 'Out-of-line key'}
-            </code>
-          </p>
-          <p>Schema metadata is available. No records have been requested.</p>
-        {:else if status?.state === 'configured'}
-          <h3>Select a table</h3>
-          <p>Choose a table from the sidebar to inspect its schema metadata.</p>
-        {/if}
-        <button
-          class="setup-retry"
-          type="button"
-          onclick={checkSetup}
-          disabled={pending}
+
+        <div
+          class="empty-state"
+          aria-live="polite"
+          aria-busy={pending || tablesPending}
         >
-          Check setup again
-        </button>
-        <span class="empty-hint">
-          {status?.state === 'configured'
-            ? 'Cloud access has not been verified'
-            : 'Read-only access across all realms'}
-        </span>
-      </div>
+          <div class="empty-symbol" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <rect x="4" y="5" width="24" height="22" rx="3"></rect>
+              <path d="M4 12h24M12 12v15M4 19h24"></path>
+            </svg>
+          </div>
+          {#if pending}
+            <h3>Checking local setup</h3>
+            <p>Reading the configuration status of your local workspace.</p>
+          {:else if failure}
+            <h3>Local API unavailable</h3>
+            <p>{failure}</p>
+          {:else if status?.state === 'unconfigured'}
+            <h3>Database setup required</h3>
+            <p>{status.error.message}</p>
+          {:else if tablesPending}
+            <h3>Loading tables</h3>
+            <p>Reading table names from the configured schema export.</p>
+          {:else if tablesFailure}
+            <h3>Tables unavailable</h3>
+            <p>{tablesFailure}</p>
+          {:else if tables?.length === 0}
+            <h3>No tables in schema export</h3>
+            <p>
+              The local configuration is valid. Re-export the schema and restart
+              the API if you expected tables.
+            </p>
+          {:else if status?.state === 'configured'}
+            <h3>Select a table</h3>
+            <p>
+              Choose a table from the sidebar to inspect its schema metadata.
+            </p>
+          {/if}
+          <button
+            class="setup-retry"
+            type="button"
+            onclick={checkSetup}
+            disabled={pending}
+          >
+            Check setup again
+          </button>
+          <span class="empty-hint">
+            {status?.state === 'configured'
+              ? 'Cloud access has not been verified'
+              : 'Read-only access across all realms'}
+          </span>
+        </div>
+      {/if}
     </section>
   </main>
 </div>
@@ -210,8 +211,7 @@
   .database-url {
     overflow-wrap: anywhere;
   }
-  #records-label,
-  code {
+  #records-label {
     overflow-wrap: anywhere;
   }
   .setup-retry {
