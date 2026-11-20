@@ -111,7 +111,7 @@ This task is split into the following increments to retain the five-file scope l
 - [x] Missing, invalid, and valid local setup states are visible; invalid setup triggers no upstream request.
 - [x] Human reviews the checkpoint before proceeding — approved by the user on 2026-11-19.
 
-**Review state:** Tasks 04–06 and checkpoint B are approved; tasks 07–09 are complete. Checkpoint C is ready for human review before task 10. Synthetic browser captures: `/tmp/dexie-setup-missing.png`, `/tmp/dexie-setup-invalid.png`, `/tmp/dexie-setup-configured.png`, `/tmp/dexie-setup-unavailable.png`, and `/tmp/dexie-setup-mobile.png`. The disposable browser verification script is `/tmp/dexie-setup-smoke.ts`; permanent browser-suite setup remains task 10. No real cloud authentication or record fetch has been attempted.
+**Review state:** Tasks 04–06 and checkpoint B are approved; tasks 07–09 are complete. Checkpoint C was approved by the user on 2026-11-20; tasks 10–12 are authorized next. Synthetic browser captures: `/tmp/dexie-setup-missing.png`, `/tmp/dexie-setup-invalid.png`, `/tmp/dexie-setup-configured.png`, `/tmp/dexie-setup-unavailable.png`, and `/tmp/dexie-setup-mobile.png`. The disposable browser verification script is `/tmp/dexie-setup-smoke.ts`; permanent browser-suite setup remains task 10. No real cloud authentication or record fetch has been attempted.
 
 ## 07 — Obtain read-only cloud tokens
 
@@ -155,13 +155,14 @@ Implementation slices (each stays within the five-file limit):
 
 - [x] All backend tests pass; exact size limits, scope restrictions, safe paths, cancellation, and secret redaction have evidence.
 - [x] A local records request works against the injected upstream fixture; no cloud credentials or resources were created.
-- [ ] Human reviews the checkpoint before proceeding.
+- [x] Human reviews the checkpoint before proceeding — approved by the user on 2026-11-20.
 
-**Review state:** Tasks 07–09 and checkpoint C's technical verification are complete; human review remains pending. Full backend test output is recorded at `/tmp/dexie-task09-tests.log`. Task 10 is not started. Real-cloud protocol acceptance remains task 18.
+**Review state:** Tasks 07–09 and checkpoint C are approved; tasks 10–12 are authorized next. Full backend test output is recorded at `/tmp/dexie-task09-tests.log`. Real-cloud protocol acceptance remains task 18.
 
 ## 10 — Exercise the local app in a browser harness
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** Three Chromium smoke tests pass through the real Svelte/Vite app and local API under Bun, with no external browser requests or browser console errors/warnings. Injected upstream fixtures validate exact read-only token scopes and data paths and cover heterogeneous multi-realm records, typed/blob values, empty and missing tables. Isolated Chromium uses the full `chromium` channel established in task 02; no browser installation or Node fallback was needed. All 255 backend tests, strict checks, lint, formatting, and build pass. The harness disables environment-file loading, refuses to reuse an existing server, retains the production access guards, and shuts down both local servers. The setup screenshot was visually reviewed. Test-server setup variants are confined to `e2e/server.ts`; production configuration has no test switch. Record rendering remains task 13.
 - **Description:** Configure Playwright and a deterministic local app server using injected upstream responses.
 - **Acceptance:** Browser tests exercise the actual backend handlers; synthetic fixtures cover heterogeneous/multi-realm data without real records; the Chromium command runs under Bun with no test-only bypass added to production configuration.
 - **Verify:** `bun run test:e2e -- --project=chromium e2e/smoke.spec.ts`; `bun run check`. Browser binary installation may be required once.

@@ -8,6 +8,7 @@
     "bun": "1.4.5"
   },
   "scripts": {
+    "test:e2e": "bun run --bun playwright test",
     "dev": "bun run --bun vite",
     "build": "bun run --bun vite build",
     "check": "bun run --bun svelte-check --tsconfig ./tsconfig.json --fail-on-warnings && bun run --bun tsc --project tsconfig.tools.json --noEmit",
