@@ -247,9 +247,9 @@ Implementation files: `src/lib/explorer-state.svelte.ts`, `src/components/Record
 
 - [x] Record paging, full inspection, focus handling, refresh, and request-race tests pass.
 - [x] Manually inspect the layout with wide/deep records and confirm there are no create/edit/delete controls.
-- [ ] Human reviews the checkpoint before proceeding.
+- [x] Human reviews the checkpoint before proceeding — approved by the user on 2026-11-20.
 
-**Review state:** Tasks 13–15 and checkpoint E's technical verification are complete; human review remains pending before tasks 16–18. Records now load on selection, open in the full JSON inspector, and refresh safely. All 339 unit/backend and 37 Chromium tests pass; strict checks, lint, formatting, and build are clean. Final wide/deep visual review used synthetic records, confirmed read-only controls, and produced `/tmp/dexie-checkpoint-e-records-1440.png`, `/tmp/dexie-checkpoint-e-records-320.png`, and `/tmp/dexie-checkpoint-e-deep.png`. Test summaries are `/tmp/dexie-checkpoint-e-tests.log` and `/tmp/dexie-checkpoint-e-browser.log`. The disposable review script is `/tmp/dexie-checkpoint-e-review.ts`. No real-cloud acceptance is claimed; that remains task 18.
+**Review state:** Tasks 13–15 and checkpoint E are approved by the user on 2026-11-20; tasks 16–18 are authorized next. Records now load on selection, open in the full JSON inspector, and refresh safely. All 339 unit/backend and 37 Chromium tests pass; strict checks, lint, formatting, and build are clean. Final wide/deep visual review used synthetic records, confirmed read-only controls, and produced `/tmp/dexie-checkpoint-e-records-1440.png`, `/tmp/dexie-checkpoint-e-records-320.png`, and `/tmp/dexie-checkpoint-e-deep.png`. Test summaries are `/tmp/dexie-checkpoint-e-tests.log` and `/tmp/dexie-checkpoint-e-browser.log`. The disposable review script is `/tmp/dexie-checkpoint-e-review.ts`. No real-cloud acceptance is claimed; that remains task 18.
 
 ## 16 — Run the app through its final commands
 
