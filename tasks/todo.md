@@ -185,7 +185,8 @@ Implementation slices: browser metadata client and tests (`src/lib/api.ts`, `tes
 
 ## 12 — Derive lossless record presentation
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** 37 focused presentation tests and all 310 unit/backend tests across ten files pass. Helpers union all own fields across the complete result, order compound/dotted key roots first, preserve unusual property names, label missing/null/empty/zero/false distinctly, and preview typed/blob/nested values without conversion or downloads. Unicode previews inspect at most 81 code points while retaining full source values; a 20,000-level nested fixture remains intact. Display-page tests cover 0/1/50/51/100/101 records, invalid/out-of-range page requests, and object identity. A floor-versus-ceiling mutation failed nine pagination cases; the original code was restored and the full suite passed. Strict checks, lint, formatting, and build pass. These helpers are ready for the task 13 record grid.
 - **Description:** Define record-column, value-preview, and page calculations independently of UI rendering.
 - **Acceptance:** Union fields across all loaded records with key roots first; distinguish missing/null/empty/zero/false; preserve nested/typed/blob-reference source values and handle unusual own-property names safely.
 - **Verify:** `bun test ./tests/records.test.ts`; include heterogeneous records, compound/dotted keys, long strings, page edges, typed values, and `__proto__`-like field names; `bun run check`.
@@ -195,9 +196,11 @@ Implementation slices: browser metadata client and tests (`src/lib/api.ts`, `tes
 
 ### Checkpoint D — Navigation
 
-- [ ] Browser harness, navigation, API-validation, and presentation tests pass.
-- [ ] Empty schema, table filtering, selected table identity, and configured-but-not-connected status are clear in the UI.
+- [x] Browser harness, navigation, API-validation, and presentation tests pass.
+- [x] Empty schema, table filtering, selected table identity, and configured-but-not-connected status are clear in the UI.
 - [ ] Human reviews the checkpoint before proceeding.
+
+**Review state:** Tasks 10–12 and checkpoint D's technical verification are complete; human review remains pending before task 13. All 12 Chromium tests and 310 unit/backend tests pass, with clean strict checks, lint, formatting, and build. Desktop/mobile navigation screenshots were reviewed under `test-results/`; test summaries are available at `/tmp/dexie-checkpoint-d-tests.log` and `/tmp/dexie-checkpoint-d-browser.log`. Tests used synthetic data only. The UI now selects tables and shows key metadata; record rendering remains task 13, with full inspection and refresh in tasks 14–15.
 
 ## 13 — Browse records in display pages
 
