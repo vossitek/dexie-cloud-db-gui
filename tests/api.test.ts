@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { rejects } from 'node:assert/strict';
-import { getStatus } from '../src/lib/api';
+import { getStatus, getTables } from '../src/lib/api';
 
 describe('browser setup client', () => {
   test('reads setup with a cancellable, non-cacheable GET', async () => {
@@ -114,5 +114,102 @@ describe('browser setup client', () => {
           'The local API returned an invalid setup response. Restart the local API and try again.',
       },
     );
+  });
+});
+
+describe('browser table metadata client', () => {
+  test('uses a cancellable, non-cacheable GET and returns key metadata in alphabetical order', async () => {
+    const controller = new AbortController();
+    const tables = await getTables(controller.signal, (url, options) => {
+      expect(url).toBe('/api/tables');
+      expect(options).toMatchObject({
+        method: 'GET',
+        cache: 'no-store',
+        signal: controller.signal,
+      });
+      return Promise.resolve(
+        Response.json({
+          tables: [
+            {
+              name: 'roles',
+              primaryKey: '[realmId+name]',
+              keyPaths: ['realmId', 'name'],
+            },
+            {
+              name: '__proto__',
+              primaryKey: '',
+              keyPaths: [],
+              ignored: 'fixture-secret',
+            },
+            { name: 'items', primaryKey: '@meta.key', keyPaths: ['meta.key'] },
+          ],
+        }),
+      );
+    });
+    expect(tables).toEqual([
+      { name: '__proto__', primaryKey: '', keyPaths: [] },
+      { name: 'items', primaryKey: '@meta.key', keyPaths: ['meta.key'] },
+      {
+        name: 'roles',
+        primaryKey: '[realmId+name]',
+        keyPaths: ['realmId', 'name'],
+      },
+    ]);
+    expect(JSON.stringify(tables)).not.toContain('fixture-secret');
+  });
+
+  test('accepts an empty schema', async () => {
+    expect(
+      await getTables(undefined, () =>
+        Promise.resolve(Response.json({ tables: [] })),
+      ),
+    ).toEqual([]);
+  });
+
+  test.each(
+    [
+      null,
+      [],
+      {},
+      { tables: null },
+      { tables: {} },
+      { tables: [null] },
+      { tables: [[]] },
+      { tables: [{ name: '', primaryKey: '@key', keyPaths: ['key'] }] },
+      { tables: [{ name: ' ', primaryKey: '@key', keyPaths: ['key'] }] },
+      { tables: [{ name: 2, primaryKey: '@key', keyPaths: ['key'] }] },
+      { tables: [{ name: 'items', primaryKey: null, keyPaths: ['key'] }] },
+      { tables: [{ name: 'items', primaryKey: '@key', keyPaths: null }] },
+      { tables: [{ name: 'items', primaryKey: '@key', keyPaths: [''] }] },
+      { tables: [{ name: 'items', primaryKey: '@key', keyPaths: ['key', 1] }] },
+      {
+        tables: [
+          { name: 'items', primaryKey: '', keyPaths: [] },
+          { name: 'items', primaryKey: '', keyPaths: [] },
+        ],
+      },
+    ].map((input) => ({ input })),
+  )('rejects malformed or duplicate metadata: %#', async ({ input }) => {
+    await rejects(
+      getTables(undefined, () => Promise.resolve(Response.json(input))),
+      /invalid table metadata/,
+    );
+  });
+
+  test('uses local templates for transport, HTTP and malformed-body errors', async () => {
+    for (const fetch of [
+      () => Promise.reject(new Error('fixture-secret exception')),
+      () =>
+        Promise.resolve(
+          new Response('fixture-secret upstream body', { status: 503 }),
+        ),
+      () => Promise.resolve(new Response('fixture-secret invalid JSON')),
+    ]) {
+      await rejects(getTables(undefined, fetch), (error: unknown) => {
+        expect(error).toBeInstanceOf(Error);
+        expect(String(error)).not.toContain('fixture-secret');
+        return true;
+      });
+    }
   });
 });

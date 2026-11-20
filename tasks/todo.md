@@ -180,6 +180,8 @@ Implementation slices (each stays within the five-file limit):
 - **Files:** `src/lib/api.ts`, `src/components/TableList.svelte`, `src/App.svelte`, `tests/api.test.ts`, `e2e/navigation.spec.ts`.
 - **Scope:** Medium.
 
+Implementation slices: browser metadata client and tests (`src/lib/api.ts`, `tests/api.test.ts`), then navigation UI and Chromium verification (`src/components/TableList.svelte`, `src/App.svelte`, `e2e/navigation.spec.ts`, `e2e/smoke.spec.ts`). The existing smoke expectation will follow the new table-selection state.
+
 ## 12 — Derive lossless record presentation
 
 - [ ] Task complete
