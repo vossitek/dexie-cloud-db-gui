@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'bun:test';
 import { rejects } from 'node:assert/strict';
-import { getStatus, getTables } from '../src/lib/api';
+import {
+  getRecords,
+  getStatus,
+  getTables,
+  RecordRequestError,
+} from '../src/lib/api';
+import { MAX_RECORDS } from '../shared/contracts';
 
 describe('browser setup client', () => {
   test('reads setup with a cancellable, non-cacheable GET', async () => {
@@ -114,6 +120,209 @@ describe('browser setup client', () => {
           'The local API returned an invalid setup response. Restart the local API and try again.',
       },
     );
+  });
+});
+
+describe('browser record client', () => {
+  const fetchedAt = '2026-11-20T10:20:30.000Z';
+  test('requests only the encoded local read route and preserves complete record values', async () => {
+    const controller = new AbortController();
+    const records = [
+      {
+        key: 'one',
+        realmId: 'realm-one',
+        nested: { array: [null, false, 0] },
+        typed: { $t: 'Date', v: '2026-11-20' },
+        blob: { _bt: 'Blob', ref: '1:fixture-ref', size: 42 },
+      },
+    ];
+    const result = await getRecords(
+      'a/b ?#%😀',
+      controller.signal,
+      (path, options) => {
+        expect(path).toBe('/api/tables/a%2Fb%20%3F%23%25%F0%9F%98%80/records');
+        expect(options).toMatchObject({
+          method: 'GET',
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+        return Promise.resolve(
+          Response.json({ records, fetchedAt, clientSecret: 'fixture-secret' }),
+        );
+      },
+    );
+    expect(result).toEqual({ records, fetchedAt });
+    expect(JSON.stringify(result)).not.toContain('fixture-secret');
+    expect(
+      await getRecords('empty', undefined, () =>
+        Promise.resolve(Response.json({ records: [], fetchedAt })),
+      ),
+    ).toEqual({ records: [], fetchedAt });
+  });
+
+  test.each(
+    [
+      null,
+      [],
+      {},
+      { records: null, fetchedAt },
+      { records: {}, fetchedAt },
+      { records: [null], fetchedAt },
+      { records: [[]], fetchedAt },
+      { records: [1], fetchedAt },
+      { records: [], fetchedAt: null },
+      { records: [], fetchedAt: 'not a timestamp' },
+      { records: [], fetchedAt: '2026-02-31T10:20:30.000Z' },
+      {
+        records: Array.from({ length: MAX_RECORDS + 1 }, () => ({})),
+        fetchedAt,
+      },
+    ].map((input) => ({ input })),
+  )('rejects invalid records and timestamps: %#', async ({ input }) => {
+    await rejects(
+      getRecords('items', undefined, () =>
+        Promise.resolve(Response.json(input)),
+      ),
+      (error: unknown) => {
+        expect(error).toBeInstanceOf(RecordRequestError);
+        expect(error).toMatchObject({
+          code: 'INVALID_RESPONSE',
+          retryable: false,
+        });
+        return true;
+      },
+    );
+  });
+
+  test('rejects numeric overflow in nested JSON', async () => {
+    await rejects(
+      getRecords('items', undefined, () =>
+        Promise.resolve(
+          new Response(
+            `{"records":[{"nested":[1e999]}],"fetchedAt":"${fetchedAt}"}`,
+          ),
+        ),
+      ),
+      { code: 'INVALID_RESPONSE' },
+    );
+  });
+
+  test('accepts the full 10,000-record boundary', async () => {
+    const records = Array.from({ length: MAX_RECORDS }, (_, key) => ({ key }));
+    const result = await getRecords('items', undefined, () =>
+      Promise.resolve(Response.json({ records, fetchedAt })),
+    );
+    expect(result.records).toHaveLength(MAX_RECORDS);
+    expect(result.records[MAX_RECORDS - 1]).toEqual({ key: MAX_RECORDS - 1 });
+  });
+
+  test.each([
+    'AUTHENTICATION_ERROR',
+    'PERMISSION_ERROR',
+    'TIMEOUT',
+    'SIZE_LIMIT',
+    'NETWORK_ERROR',
+  ] as const)(
+    'uses a local template for a structured %s error',
+    async (code) => {
+      await rejects(
+        getRecords('items', undefined, () =>
+          Promise.resolve(
+            Response.json(
+              {
+                error: {
+                  code,
+                  message: 'fixture-secret upstream details',
+                  retryable: true,
+                },
+              },
+              { status: 503 },
+            ),
+          ),
+        ),
+        (error: unknown) => {
+          expect(error).toBeInstanceOf(RecordRequestError);
+          expect(error).toMatchObject({ code, retryable: true });
+          expect(String(error)).not.toContain('fixture-secret');
+          return true;
+        },
+      );
+    },
+  );
+
+  test('sanitizes unknown codes, malformed responses and network exceptions', async () => {
+    for (const localFetch of [
+      () => Promise.reject(new Error('fixture-secret stack')),
+      () =>
+        Promise.resolve(new Response('fixture-secret HTML', { status: 502 })),
+      () =>
+        Promise.resolve(
+          Response.json(
+            {
+              error: {
+                code: 'constructor',
+                message: 'fixture-secret',
+                retryable: false,
+              },
+            },
+            { status: 502 },
+          ),
+        ),
+      () =>
+        Promise.resolve(
+          Response.json(
+            {
+              error: {
+                code: 'TIMEOUT',
+                message: 'fixture-secret',
+                retryable: 'yes',
+              },
+            },
+            { status: 504 },
+          ),
+        ),
+    ]) {
+      await rejects(
+        getRecords('items', undefined, localFetch),
+        (error: unknown) => {
+          expect(error).toBeInstanceOf(RecordRequestError);
+          expect(String(error)).not.toContain('fixture-secret');
+          return true;
+        },
+      );
+    }
+  });
+
+  test('rejects inherited and incomplete error contracts', async () => {
+    for (const error of [
+      { code: 'constructor', message: 'fixture-secret', retryable: false },
+      { code: 'TIMEOUT', retryable: true },
+    ]) {
+      await rejects(
+        getRecords('items', undefined, () =>
+          Promise.resolve(Response.json({ error }, { status: 502 })),
+        ),
+        { code: 'INVALID_RESPONSE' },
+      );
+    }
+  });
+
+  test('does not start an aborted read or expose its cancellation reason', async () => {
+    const controller = new AbortController();
+    controller.abort('fixture-secret');
+    let calls = 0;
+    await rejects(
+      getRecords('items', controller.signal, () => {
+        calls++;
+        return Promise.resolve(Response.json({ records: [], fetchedAt }));
+      }),
+      (error: unknown) => {
+        expect(error).toMatchObject({ name: 'AbortError' });
+        expect(String(error)).not.toContain('fixture-secret');
+        return true;
+      },
+    );
+    expect(calls).toBe(0);
   });
 });
 

@@ -198,9 +198,9 @@ Implementation slices: browser metadata client and tests (`src/lib/api.ts`, `tes
 
 - [x] Browser harness, navigation, API-validation, and presentation tests pass.
 - [x] Empty schema, table filtering, selected table identity, and configured-but-not-connected status are clear in the UI.
-- [ ] Human reviews the checkpoint before proceeding.
+- [x] Human reviews the checkpoint before proceeding — approved by the user on 2026-11-20.
 
-**Review state:** Tasks 10–12 and checkpoint D's technical verification are complete; human review remains pending before task 13. All 12 Chromium tests and 310 unit/backend tests pass, with clean strict checks, lint, formatting, and build. Desktop/mobile navigation screenshots were reviewed under `test-results/`; test summaries are available at `/tmp/dexie-checkpoint-d-tests.log` and `/tmp/dexie-checkpoint-d-browser.log`. Tests used synthetic data only. The UI now selects tables and shows key metadata; record rendering remains task 13, with full inspection and refresh in tasks 14–15.
+**Review state:** Tasks 10–12 and checkpoint D are approved; tasks 13–15 are authorized next. All 12 Chromium tests and 310 unit/backend tests pass, with clean strict checks, lint, formatting, and build. Desktop/mobile navigation screenshots were reviewed under `test-results/`; test summaries are available at `/tmp/dexie-checkpoint-d-tests.log` and `/tmp/dexie-checkpoint-d-browser.log`. Tests used synthetic data only. The UI now selects tables and shows key metadata; record rendering remains task 13, with full inspection and refresh in tasks 14–15.
 
 ## 13 — Browse records in display pages
 
@@ -211,6 +211,8 @@ Implementation slices: browser metadata client and tests (`src/lib/api.ts`, `tes
 - **Dependencies:** 12.
 - **Files:** `src/components/RecordTable.svelte`, `src/App.svelte`, `src/styles.css`, `e2e/records.spec.ts`.
 - **Scope:** Medium.
+
+Implementation slices (each stays within the five-file limit): browser record client and validation tests (`src/lib/api.ts`, `tests/api.test.ts`); synthetic record-count fixtures (`e2e/fixtures.ts`, `e2e/server.ts`); then the grid and selection integration (`src/components/RecordBrowser.svelte`, `src/components/RecordTable.svelte`, `src/App.svelte`, `src/styles.css`, `e2e/records.spec.ts`). The record browser owns loading/paging state so the application shell remains focused; task 15 will consolidate request ownership into the planned state module.
 
 ## 14 — Inspect a complete record
 
