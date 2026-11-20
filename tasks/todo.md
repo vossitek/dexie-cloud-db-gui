@@ -145,6 +145,11 @@ This task is split into the following increments to retain the five-file scope l
 - **Files:** `server/dexie.ts`, `server/http.ts`, `tests/dexie.test.ts`, `tests/http.test.ts`.
 - **Scope:** Medium.
 
+Implementation slices (each stays within the five-file limit):
+
+- [x] Cloud client: `server/dexie.ts`, `tests/dexie.test.ts`. Evidence: 38 focused tests and all 212 existing/new tests pass. Exact scopes, methods and encoded paths, two-realm records, bounded 401 renewal, immediate 403 failure, redirect refusal, limits, fresh results, cancellation during shared renewal/fetch/body, and a deadline spanning fetch and body consumption are covered. Inverting the renewal guard failed its focused test; the source was restored. Only injected upstream fixtures were used.
+- [ ] Local endpoint: `server/http.ts`, `server/index.ts`, `tests/http.test.ts`, `tests/request-guard.test.ts`. Wire the records route, retain access guards, await asynchronous handlers in existing tests, and allow the 30-second application deadline to complete before Bun's idle timeout. Verify a real loopback request with synthetic cloud responses.
+
 ### Checkpoint C — Read-only integration boundary
 
 - [ ] All backend tests pass; exact size limits, scope restrictions, safe paths, cancellation, and secret redaction have evidence.
