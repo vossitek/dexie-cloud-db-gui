@@ -1,8 +1,8 @@
 import { createServer } from 'vite';
 import viteConfig from '../vite.config';
-import { loadConfiguration } from '../server/config';
+import { loadConfiguration, type SetupState } from '../server/config';
 import { createHandler, jsonResponse } from '../server/http';
-import { REQUEST_TIMEOUT_MS } from '../shared/contracts';
+import { REQUEST_TIMEOUT_MS, type DatabaseRecord } from '../shared/contracts';
 import {
   fixtureEnvironment,
   fixtureFetch,
@@ -18,6 +18,25 @@ const empty = await loadConfiguration(fixtureEnvironment, () =>
   Promise.resolve('{"schema":{}}'),
 );
 const missing = await loadConfiguration({});
+
+function fixtureHandler(
+  setup: SetupState,
+  records?: readonly DatabaseRecord[],
+) {
+  let time = fixtureTime;
+  return createHandler({
+    mode: 'development',
+    setup,
+    upstream: {
+      fetch: async (url, init) => {
+        const response = await fixtureFetch(url, init, records);
+        if (new URL(url).pathname.startsWith('/all/')) time += 1000;
+        return response;
+      },
+      now: () => time,
+    },
+  });
+}
 const handlers = new Map<string, ReturnType<typeof createHandler>>(
   (
     [
@@ -27,14 +46,7 @@ const handlers = new Map<string, ReturnType<typeof createHandler>>(
     ] as const
   ).map(([name, setup]) => {
     // All variants run the production handlers and their normal access guards.
-    return [
-      name,
-      createHandler({
-        mode: 'development',
-        setup,
-        upstream: { fetch: fixtureFetch, now: () => fixtureTime },
-      }),
-    ] as const;
+    return [name, fixtureHandler(setup)] as const;
   }),
 );
 const configuredHandler = handlers.get('configured');
@@ -42,17 +54,7 @@ if (!configuredHandler) throw new Error('Missing configured test handler');
 
 for (const count of [0, 1, 50, 51]) {
   const records = recordsForCount(count);
-  handlers.set(
-    `records-${count}`,
-    createHandler({
-      mode: 'development',
-      setup: configured,
-      upstream: {
-        fetch: (url, init) => fixtureFetch(url, init, records),
-        now: () => fixtureTime,
-      },
-    }),
-  );
+  handlers.set(`records-${count}`, fixtureHandler(configured, records));
 }
 
 // Do not load the developer's environment or reuse their running app.

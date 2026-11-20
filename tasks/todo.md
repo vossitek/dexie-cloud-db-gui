@@ -230,7 +230,8 @@ Implementation slices: a JSON display formatter and its unit tests (`src/lib/jso
 
 ## 15 — Refresh without stale results
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** All 37 Chromium tests and 339 unit/backend tests pass, including ten refresh/state cases. The Svelte state owner uses an AbortController and generation identifier, releases old records/timestamps before replacement reads, resets paging/inspection, and disposes pending work on table changes. Controlled loaders that ignore abort verify that late successes, errors, and finally callbacks cannot overwrite newer data, timestamps, or loading state. Browser tests cover fresh fetch times, display-page reset, delayed table switching, authentication/permission/size/timeout/network failures, removal of stale results, and explicit retry recovery. Inverting the generation guard failed its browser test; the original source was restored and the full suite passed. Strict checks, lint, formatting, and build pass. Only synthetic data was used in validation.
 - **Description:** Consolidate request ownership so selection, refresh, retry, paging, and inspector state remain consistent.
 - **Acceptance:** Abort/release old results on selection; refresh resets paging and inspection; late responses/errors cannot replace newer state or timestamps, and failures never label stale data current.
 - **Verify:** `bun run test:e2e -- --project=chromium e2e/refresh.spec.ts`; inject delayed/out-of-order results, authentication/permission errors, oversize failures, and retry recovery; `bun run check`.
@@ -244,9 +245,11 @@ Implementation files: `src/lib/explorer-state.svelte.ts`, `src/components/Record
 
 ### Checkpoint E — Complete browsing workflow
 
-- [ ] Record paging, full inspection, focus handling, refresh, and request-race tests pass.
-- [ ] Manually inspect the layout with wide/deep records and confirm there are no create/edit/delete controls.
+- [x] Record paging, full inspection, focus handling, refresh, and request-race tests pass.
+- [x] Manually inspect the layout with wide/deep records and confirm there are no create/edit/delete controls.
 - [ ] Human reviews the checkpoint before proceeding.
+
+**Review state:** Tasks 13–15 and checkpoint E's technical verification are complete; human review remains pending before tasks 16–18. Records now load on selection, open in the full JSON inspector, and refresh safely. All 339 unit/backend and 37 Chromium tests pass; strict checks, lint, formatting, and build are clean. Final wide/deep visual review used synthetic records, confirmed read-only controls, and produced `/tmp/dexie-checkpoint-e-records-1440.png`, `/tmp/dexie-checkpoint-e-records-320.png`, and `/tmp/dexie-checkpoint-e-deep.png`. Test summaries are `/tmp/dexie-checkpoint-e-tests.log` and `/tmp/dexie-checkpoint-e-browser.log`. The disposable review script is `/tmp/dexie-checkpoint-e-review.ts`. No real-cloud acceptance is claimed; that remains task 18.
 
 ## 16 — Run the app through its final commands
 

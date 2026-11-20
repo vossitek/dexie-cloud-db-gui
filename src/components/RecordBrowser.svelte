@@ -1,57 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type {
-    DatabaseRecord,
-    RecordsResponse,
-    TableMetadata,
-  } from '../../shared/contracts';
-  import { getRecords, RecordRequestError } from '../lib/api';
-  import { deriveColumns } from '../lib/records';
+  import type { DatabaseRecord, TableMetadata } from '../../shared/contracts';
+  import { createExplorerState } from '../lib/explorer-state.svelte';
   import RecordTable from './RecordTable.svelte';
   import RecordInspector from './RecordInspector.svelte';
 
   let { table }: { table: TableMetadata } = $props();
-  // Loaded records are immutable; avoid recursively proxying a complete table.
-  // https://svelte.dev/docs/svelte/$state#state.raw
-  let result = $state.raw<RecordsResponse | null>(null);
-  let pending = $state(true);
-  let failure = $state<string | null>(null);
-  let pageNumber = $state(1);
-  let inspected = $state.raw<{
-    record: DatabaseRecord;
-    opener: HTMLButtonElement;
-  } | null>(null);
-  let controller: AbortController | undefined;
-  const columns = $derived(
-    result ? deriveColumns(result.records, table.keyPaths) : [],
-  );
-
-  async function load() {
-    controller?.abort();
-    const current = new AbortController();
-    controller = current;
-    result = null;
-    failure = null;
-    pending = true;
-    pageNumber = 1;
-    inspected = null;
-    try {
-      const loaded = await getRecords(table.name, current.signal);
-      if (!current.signal.aborted) result = loaded;
-    } catch (error) {
-      if (!current.signal.aborted)
-        failure =
-          error instanceof RecordRequestError
-            ? error.message
-            : 'Cannot load records. Try again.';
-    } finally {
-      if (!current.signal.aborted) pending = false;
-    }
-  }
+  const explorer = createExplorerState();
 
   onMount(() => {
-    void load();
-    return () => controller?.abort();
+    void explorer.select(table);
+    return () => explorer.dispose();
   });
 </script>
 
@@ -62,70 +21,87 @@
       Primary key: <code>{table.primaryKey || 'Out-of-line key'}</code>
     </p>
   </div>
-  <span class="small muted" role="status">
-    {result
-      ? `${result.records.length} ${result.records.length === 1 ? 'record' : 'records'}`
-      : 'No records loaded'}
-  </span>
-</div>
-{#if result}
-  <p class="fetch-time small muted">
-    Fetched <time datetime={result.fetchedAt}>
-      {new Date(result.fetchedAt).toLocaleString()}
-    </time>
-  </p>
-{/if}
-{#if pending}
-  <div class="empty-state" role="status" aria-busy="true">
-    <h3>Loading records</h3>
-    <p>Reading the complete table across all realms.</p>
-  </div>
-{:else if failure}
-  <div class="empty-state" role="alert">
-    <h3>Cannot load records</h3>
-    <p>{failure}</p>
+  <div class="record-actions">
     <button
       class="action-button"
       type="button"
       onclick={() => {
-        void load();
+        void explorer.refresh();
+      }}
+    >
+      Refresh table
+    </button>
+    <span class="small muted" role="status">
+      {explorer.result
+        ? `${explorer.result.records.length} ${explorer.result.records.length === 1 ? 'record' : 'records'}`
+        : 'No records loaded'}
+    </span>
+  </div>
+</div>
+{#if explorer.result}
+  <p class="fetch-time small muted">
+    Fetched <time datetime={explorer.result.fetchedAt}>
+      {new Date(explorer.result.fetchedAt).toLocaleString()}
+    </time>
+  </p>
+{/if}
+{#if explorer.pending}
+  <div class="empty-state" role="status" aria-busy="true">
+    <h3>Loading records</h3>
+    <p>Reading the complete table across all realms.</p>
+  </div>
+{:else if explorer.failure}
+  <div class="empty-state" role="alert">
+    <h3>Cannot load records</h3>
+    <p>{explorer.failure.message}</p>
+    <button
+      class="action-button"
+      type="button"
+      onclick={() => {
+        void explorer.refresh();
       }}
     >
       Retry records
     </button>
   </div>
-{:else if result?.records.length === 0}
+{:else if explorer.result?.records.length === 0}
   <div class="empty-state">
     <h3>This table is empty</h3>
     <p>The complete read returned no records.</p>
   </div>
-{:else if result}
+{:else if explorer.result}
   <RecordTable
     name={table.name}
-    records={result.records}
-    {columns}
-    {pageNumber}
+    records={explorer.result.records}
+    columns={explorer.columns}
+    pageNumber={explorer.pageNumber}
     onpage={(page: number) => {
-      pageNumber = page;
-      inspected = null;
+      explorer.setPage(page);
     }}
     oninspect={(record: DatabaseRecord, opener: HTMLButtonElement) => {
-      inspected = { record, opener };
+      explorer.inspect(record, opener);
     }}
   />
 {/if}
-{#if inspected}
+{#if explorer.inspected}
   <RecordInspector
-    record={inspected.record}
-    opener={inspected.opener}
+    record={explorer.inspected.record}
+    opener={explorer.inspected.opener}
     tableName={table.name}
     onclose={() => {
-      inspected = null;
+      explorer.closeInspector();
     }}
   />
 {/if}
 
 <style>
+  .record-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--space-3);
+  }
   h2,
   code {
     overflow-wrap: anywhere;
