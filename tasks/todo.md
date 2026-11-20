@@ -111,7 +111,7 @@ This task is split into the following increments to retain the five-file scope l
 - [x] Missing, invalid, and valid local setup states are visible; invalid setup triggers no upstream request.
 - [x] Human reviews the checkpoint before proceeding — approved by the user on 2026-11-19.
 
-**Review state:** Tasks 04–06 and checkpoint B are approved; tasks 07–08 are complete. Task 09 remains before checkpoint C. Synthetic browser captures: `/tmp/dexie-setup-missing.png`, `/tmp/dexie-setup-invalid.png`, `/tmp/dexie-setup-configured.png`, `/tmp/dexie-setup-unavailable.png`, and `/tmp/dexie-setup-mobile.png`. The disposable browser verification script is `/tmp/dexie-setup-smoke.ts`; permanent browser-suite setup remains task 10. No real cloud authentication or record fetch has been attempted.
+**Review state:** Tasks 04–06 and checkpoint B are approved; tasks 07–09 are complete. Checkpoint C is ready for human review before task 10. Synthetic browser captures: `/tmp/dexie-setup-missing.png`, `/tmp/dexie-setup-invalid.png`, `/tmp/dexie-setup-configured.png`, `/tmp/dexie-setup-unavailable.png`, and `/tmp/dexie-setup-mobile.png`. The disposable browser verification script is `/tmp/dexie-setup-smoke.ts`; permanent browser-suite setup remains task 10. No real cloud authentication or record fetch has been attempted.
 
 ## 07 — Obtain read-only cloud tokens
 
@@ -137,7 +137,8 @@ This task is split into the following increments to retain the five-file scope l
 
 ## 09 — Serve complete selected-table reads
 
-- [ ] Task complete
+- [x] Task complete
+- **Evidence:** Both implementation slices below are complete. All 255 tests across nine files pass, including 38 cloud-client and 53 HTTP API tests; strict checks, lint, formatting, and build pass. The endpoint returns complete multi-realm records and successful-fetch timestamps, reuses tokens without caching records, maps sanitized errors to HTTP statuses, and preserves request/response safeguards. Known literal dot-segment and unencodable table names fail locally rather than normalizing into another upstream path. Deliberate mutations of renewal, allowlisting, and exact route matching were caught; the original sources were restored and focused tests passed again. Real loopback HTTP verifies successful reads and cancellation on client disconnect. The actual startup entry point returned a complete result after an 11-second injected upstream wait, confirming Bun's former 10-second idle cutoff no longer prevents the 30-second application deadline. Only synthetic fixtures were used; no cloud credentials or resources were created and no real cloud request was made.
 - **Description:** Connect authenticated bounded reads to the local records endpoint.
 - **Acceptance:** Allowlisted table selection calls only encoded `GET /all/<table>` with no realm filter; expired-token reads retry authentication at most once; return complete records/timestamp or a sanitized typed error.
 - **Verify:** `bun test ./tests/dexie.test.ts ./tests/http.test.ts`; assert exact methods/scopes/paths, two-realm fixtures, 401 versus 403 handling, timeout, abort, size failures, no-store, and no data mutations; `bun run check`.
@@ -148,13 +149,15 @@ This task is split into the following increments to retain the five-file scope l
 Implementation slices (each stays within the five-file limit):
 
 - [x] Cloud client: `server/dexie.ts`, `tests/dexie.test.ts`. Evidence: 38 focused tests and all 212 existing/new tests pass. Exact scopes, methods and encoded paths, two-realm records, bounded 401 renewal, immediate 403 failure, redirect refusal, limits, fresh results, cancellation during shared renewal/fetch/body, and a deadline spanning fetch and body consumption are covered. Inverting the renewal guard failed its focused test; the source was restored. Only injected upstream fixtures were used.
-- [ ] Local endpoint: `server/http.ts`, `server/index.ts`, `tests/http.test.ts`, `tests/request-guard.test.ts`. Wire the records route, retain access guards, await asynchronous handlers in existing tests, and allow the 30-second application deadline to complete before Bun's idle timeout. Verify a real loopback request with synthetic cloud responses.
+- [x] Local endpoint: `server/http.ts`, `server/index.ts`, `tests/http.test.ts`, `tests/request-guard.test.ts`. Evidence: 53 API tests plus the existing 25 request-boundary tests pass. All handlers are awaited, local errors retain no-store/security headers, and unsupported names/parameters/methods/foreign origins never initiate cloud access. The Bun idle timeout is derived from the application deadline plus five seconds. Real loopback tests cover complete results and cancellation; the disposable actual-entry-point smoke script is `/tmp/dexie-task09-smoke.ts`.
 
 ### Checkpoint C — Read-only integration boundary
 
-- [ ] All backend tests pass; exact size limits, scope restrictions, safe paths, cancellation, and secret redaction have evidence.
-- [ ] A local records request works against the injected upstream fixture; no cloud credentials or resources were created.
+- [x] All backend tests pass; exact size limits, scope restrictions, safe paths, cancellation, and secret redaction have evidence.
+- [x] A local records request works against the injected upstream fixture; no cloud credentials or resources were created.
 - [ ] Human reviews the checkpoint before proceeding.
+
+**Review state:** Tasks 07–09 and checkpoint C's technical verification are complete; human review remains pending. Full backend test output is recorded at `/tmp/dexie-task09-tests.log`. Task 10 is not started. Real-cloud protocol acceptance remains task 18.
 
 ## 10 — Exercise the local app in a browser harness
 

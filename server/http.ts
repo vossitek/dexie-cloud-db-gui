@@ -1,10 +1,24 @@
 import { isLocalRequest, type ServerMode } from './request-guard';
 import type { SetupState } from './config';
+import { AuthenticationError } from './auth';
+import { createDexieClient, type DexieOptions } from './dexie';
+import { ReadResponseError } from './read-response';
 import type {
   ApiError,
+  ErrorCode,
   StatusResponse,
   TablesResponse,
 } from '../shared/contracts';
+
+const errorStatuses: Partial<Record<ErrorCode, number>> = {
+  CONFIGURATION_ERROR: 503,
+  AUTHENTICATION_ERROR: 401,
+  PERMISSION_ERROR: 403,
+  BAD_REQUEST: 400,
+  NOT_FOUND: 404,
+  SIZE_LIMIT: 413,
+  TIMEOUT: 504,
+};
 
 export function jsonResponse(
   body: unknown,
@@ -27,11 +41,27 @@ export function jsonResponse(
 export function createHandler({
   mode,
   setup,
+  upstream,
 }: {
   mode: ServerMode;
   setup: SetupState;
+  upstream?: DexieOptions;
 }) {
-  return (request: Request): Response => {
+  const client =
+    setup.state === 'configured'
+      ? createDexieClient(setup.config, upstream)
+      : {
+          readTable: () =>
+            Promise.reject(
+              new ReadResponseError(
+                'CONFIGURATION_ERROR',
+                setup.error.message,
+                setup.error.retryable,
+              ),
+            ),
+        };
+
+  return async (request: Request): Promise<Response> => {
     if (!isLocalRequest(request, mode)) {
       return jsonResponse(
         {
@@ -88,6 +118,46 @@ export function createHandler({
       return jsonResponse({
         tables: setup.config.tables,
       } satisfies TablesResponse);
+    }
+
+    const encodedName = /^\/api\/tables\/([^/]+)\/records$/.exec(
+      url.pathname,
+    )?.[1];
+    if (encodedName !== undefined) {
+      try {
+        let name: string;
+        try {
+          name = decodeURIComponent(encodedName);
+        } catch {
+          throw new ReadResponseError(
+            'BAD_REQUEST',
+            'The table name is not valid URL-encoded text.',
+          );
+        }
+        return jsonResponse(await client.readTable(name, request.signal));
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError')
+          throw error;
+        if (
+          error instanceof AuthenticationError ||
+          error instanceof ReadResponseError
+        ) {
+          return jsonResponse(
+            { error: error.error } satisfies ApiError,
+            errorStatuses[error.error.code] ?? 502,
+          );
+        }
+        return jsonResponse(
+          {
+            error: {
+              code: 'INTERNAL_ERROR',
+              message: 'The local server could not complete this request.',
+              retryable: true,
+            },
+          } satisfies ApiError,
+          500,
+        );
+      }
     }
 
     return jsonResponse(

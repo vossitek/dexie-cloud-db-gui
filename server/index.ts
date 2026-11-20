@@ -1,5 +1,6 @@
 import { createHandler, jsonResponse } from './http';
 import { loadConfiguration } from './config';
+import { REQUEST_TIMEOUT_MS } from '../shared/contracts';
 
 const setup = await loadConfiguration(process.env);
 
@@ -8,6 +9,8 @@ const server = Bun.serve({
   hostname: '127.0.0.1',
   port: 3001,
   development: false,
+  // Let the application return its structured timeout before closing the socket.
+  idleTimeout: Math.ceil(REQUEST_TIMEOUT_MS / 1000) + 5,
   fetch: createHandler({ mode: 'development', setup }),
   error: () =>
     jsonResponse(

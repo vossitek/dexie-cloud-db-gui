@@ -38,7 +38,7 @@ describe('local request boundary', () => {
     { 'Sec-Fetch-Site': 'unknown' },
     { Origin: 'http://127.0.0.1:3001', 'Sec-Fetch-Site': 'cross-site' },
   ])('rejects foreign request context %j before routing', async (headers) => {
-    const response = production(request(headers));
+    const response = await production(request(headers));
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({
       error: {
@@ -49,15 +49,18 @@ describe('local request boundary', () => {
     });
   });
 
-  test('rejects a missing Host and a non-local request URL', () => {
+  test('rejects a missing Host and a non-local request URL', async () => {
     expect(
-      production(new Request('http://127.0.0.1:3001/api/status')).status,
+      (await production(new Request('http://127.0.0.1:3001/api/status')))
+        .status,
     ).toBe(403);
     expect(
-      production(
-        new Request('http://evil.example/api/status', {
-          headers: { Host: '127.0.0.1:3001' },
-        }),
+      (
+        await production(
+          new Request('http://evil.example/api/status', {
+            headers: { Host: '127.0.0.1:3001' },
+          }),
+        )
       ).status,
     ).toBe(403);
   });
@@ -68,12 +71,12 @@ describe('local request boundary', () => {
     { 'Sec-Fetch-Site': 'none' },
   ])(
     'allows local CLI and same-origin requests through to routing: %j',
-    (headers) => {
-      expect(production(request(headers)).status).toBe(404);
+    async (headers) => {
+      expect((await production(request(headers))).status).toBe(404);
     },
   );
 
-  test('preserves development proxy Host and Origin validation', () => {
+  test('preserves development proxy Host and Origin validation', async () => {
     const proxied = new Request('http://127.0.0.1:5173/api/unknown', {
       headers: {
         Host: '127.0.0.1:5173',
@@ -81,30 +84,32 @@ describe('local request boundary', () => {
         'Sec-Fetch-Site': 'same-origin',
       },
     });
-    expect(development(proxied).status).toBe(404);
-    expect(production(proxied).status).toBe(403);
+    expect((await development(proxied)).status).toBe(404);
+    expect((await production(proxied)).status).toBe(403);
     expect(
-      development(request({ Origin: 'https://evil.example' })).status,
+      (await development(request({ Origin: 'https://evil.example' }))).status,
     ).toBe(403);
   });
 
   test.each(['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'])(
     'rejects %s without dispatching a mutation',
-    (method) => {
-      const response = production(request({}, method));
+    async (method) => {
+      const response = await production(request({}, method));
       expect(response.status).toBe(405);
       expect(response.headers.get('Allow')).toBe('GET');
     },
   );
 
-  test('does not use forwarded headers to trust a foreign request', () => {
+  test('does not use forwarded headers to trust a foreign request', async () => {
     expect(
-      development(
-        request({
-          Host: 'evil.example',
-          'X-Forwarded-Host': '127.0.0.1:5173',
-          'X-Forwarded-For': '127.0.0.1',
-        }),
+      (
+        await development(
+          request({
+            Host: 'evil.example',
+            'X-Forwarded-Host': '127.0.0.1:5173',
+            'X-Forwarded-For': '127.0.0.1',
+          }),
+        )
       ).status,
     ).toBe(403);
   });
@@ -116,7 +121,7 @@ describe('local request boundary', () => {
   ])(
     'returns sanitized, non-cacheable JSON without CORS permission',
     async (input) => {
-      const response = production(input);
+      const response = await production(input);
       expect(response.headers.get('Cache-Control')).toBe('no-store');
       expect(response.headers.get('Content-Type')).toContain(
         'application/json',
