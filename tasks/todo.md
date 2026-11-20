@@ -267,6 +267,7 @@ Implementation slices: built handler (`server/static.ts`, `tests/static.test.ts`
 ## 17 — Verify security and accessible browser behavior
 
 - [ ] Task complete
+- **Progress:** Automated verification and the search-input contrast remediation are complete. All 44 development and 41 built Chromium tests pass, including real cross-origin CORS denial, direct/proxied guards, no persistent browser stores, keyboard focus, and reflow/forced-color checks. Pinned axe-core 4.13.0 and Pa11y 9.1.1 report no violations/issues in five synthetic states; manual contrast review resolves axe's glyph/sticky-cell review items. Firefox is not installed, Safari automation is disabled, and VoiceOver/native zoom have not been exercised; those criteria remain open in `docs/validation.md`. No browser settings were changed.
 - **Description:** Exercise the assembled app's safety/accessibility properties and record cross-browser outcomes.
 - **Acceptance:** Built and proxied modes enforce local browser access and never expose tokens or persist records; keyboard, labels, contrast, and focus meet the specified workflow; Firefox/Safari smoke results and meaningful regressions are recorded.
 - **Verify:** `bun run test:e2e -- --project=chromium`; focused `e2e/security.spec.ts` and `e2e/accessibility.spec.ts`; manual Firefox/Safari and contrast inspection. Document any unavailable browser as an unverified criterion, not a pass.
@@ -274,9 +275,12 @@ Implementation slices: built handler (`server/static.ts`, `tests/static.test.ts`
 - **Files:** `e2e/security.spec.ts`, `e2e/accessibility.spec.ts`, `playwright.config.ts`, `docs/validation.md`.
 - **Scope:** Medium. Split any remediation into its own focused task with its regression test.
 
+Implementation slices: search contrast fix plus `e2e/accessibility.spec.ts`; dual-mode harness (`e2e/server.ts`, `e2e/smoke.spec.ts`, `playwright.config.ts`) and `e2e/security.spec.ts`; validation documentation separately. This records an explicit split rather than expanding the original file estimate.
+
 ## 18 — Document setup and collect final acceptance evidence
 
 - [ ] Task complete
+- **Progress:** `README.md`, `docs/local-setup.md`, `.env.example`, and `docs/validation.md` now document setup, schema export, commands, restart behavior, limits, troubleshooting, and all ten acceptance criteria. Frozen install, strict checks, lint, formatting, 362 local tests, both Chromium modes, frontend/server build, and native dependency audit pass. Local configuration validates with nine schema tables; confirmation that it targets the intended existing test database is pending before real cloud reads. No real token/data request, cloud write, remote resource creation, or credential disclosure was performed.
 - **Description:** Finish setup/troubleshooting documentation and validate the read-only integration against an existing test cloud database.
 - **Acceptance:** Docs explain credentials, schema export, restart, limits, and all commands; record protocol/expiry/multi-realm smoke evidence without secrets; map every spec success criterion to its evidence and leave any unmet criterion explicitly open.
 - **Verify:** `bun install --frozen-lockfile`; `bun run check`; `bun run lint`; `bun run format:check`; `bun test ./tests`; `bun run test:e2e -- --project=chromium`; `bun run build`; smoke `bun run start` against a locally configured existing test database. Request missing configuration only when the app is concrete and ready to exercise; do not create/seed a remote database.
