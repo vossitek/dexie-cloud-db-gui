@@ -1,0 +1,38 @@
+{
+  "name": "dexie-cloud-db-gui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.4.5",
+  "engines": {
+    "bun": "1.4.5"
+  },
+  "scripts": {
+    "test:e2e": "bun run --bun playwright test",
+    "dev": "bun scripts/dev.ts",
+    "build": "bun run check && bun run --bun vite build && bun build server/index.ts --target=bun --outdir dist --entry-naming server.js",
+    "start": "bun dist/server.js",
+    "check": "bun run --bun svelte-check --tsconfig ./tsconfig.json --fail-on-warnings && bun run --bun tsc --project tsconfig.tools.json --noEmit",
+    "lint": "bun run --bun eslint . --max-warnings 0",
+    "format": "bun run --bun prettier --write .",
+    "format:check": "bun run --bun prettier --check ."
+  },
+  "dependencies": {
+    "svelte": "5.58.0"
+  },
+  "trustedDependencies": [],
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.65.1",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@types/bun": "1.4.4",
+    "eslint": "10.15.0",
+    "eslint-plugin-svelte": "3.24.1",
+    "prettier": "3.10.1",
+    "prettier-plugin-svelte": "4.2.0",
+    "svelte-check": "4.7.8",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.73.0",
+    "vite": "8.3.8"
+  }
+}
